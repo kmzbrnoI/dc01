@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name jlcpcb_tooling_holes)(type KiCad)(uri ${KIPRJMOD}/jlcpcb_tooling_holes.pretty)(options "")(descr ""))
+)
