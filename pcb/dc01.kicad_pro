@@ -365,7 +365,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "mtb-usb-4-ele.kicad_pro",
+    "filename": "dc01.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -446,6 +446,14 @@
     [
       "844d7d7a-b386-45a8-aaf6-bf41bbcb43b5",
       ""
+    ],
+    [
+      "7d37d309-375e-4a1a-8b3f-c3df19c8683d",
+      "DCC cutting"
+    ],
+    [
+      "2cf54f45-b5f3-43f0-9920-2b504cf8dc98",
+      "Safe relay signal generation"
     ]
   ],
   "text_variables": {}
