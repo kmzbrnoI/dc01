@@ -4511,7 +4511,7 @@
     (property "Reference" "J9" (id 0) (at 266.192 87.4303 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "Conn_01x02" (id 1) (at 266.192 89.9672 0)
+    (property "Value" "MVE252-5-V" (id 1) (at 266.192 89.9672 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "TerminalBlock_Euroclamp:MVE252-5-V" (id 2) (at 264.16 86.995 0)
@@ -4602,7 +4602,7 @@
     (property "Reference" "J10" (id 0) (at 266.192 101.4003 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "Conn_01x02" (id 1) (at 266.192 103.9372 0)
+    (property "Value" "MVE252-5-V" (id 1) (at 266.192 103.9372 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "TerminalBlock_Euroclamp:MVE252-5-V" (id 2) (at 264.16 100.965 0)
@@ -5289,19 +5289,19 @@
       (reference "J5") (unit 1) (value "RJ12") (footprint "Connector_RJ:RJ25_Wayconn_MJEA-660X1_Horizontal")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/2fcba7ba-df1c-4745-a2a2-d9d3b5c84860"
-      (reference "J6") (unit 1) (value "Conn_01x02") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
+      (reference "J6") (unit 1) (value "MVE252-5-V") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/4158d113-ab0f-4a93-aa7f-b745746d1045"
-      (reference "J7") (unit 1) (value "Conn_01x02") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
+      (reference "J7") (unit 1) (value "MVE252-5-V") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
     )
     (path "/00000000-0000-0000-0000-0000605d9623"
       (reference "J8") (unit 1) (value "Conn_01x02") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
     )
     (path "/09ebdf7c-8ad3-4ef7-b64a-85cf5a878a6e"
-      (reference "J9") (unit 1) (value "Conn_01x02") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
+      (reference "J9") (unit 1) (value "MVE252-5-V") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
     )
     (path "/2fc9e04d-6fab-47f1-b4f9-d0ede37b44c7"
-      (reference "J10") (unit 1) (value "Conn_01x02") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
+      (reference "J10") (unit 1) (value "MVE252-5-V") (footprint "TerminalBlock_Euroclamp:MVE252-5-V")
     )
     (path "/00000000-0000-0000-0000-0000601ff48e"
       (reference "JP1") (unit 1) (value "SJ_2_Open") (footprint "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm")
