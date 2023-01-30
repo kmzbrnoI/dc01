@@ -5204,11 +5204,11 @@
     (path "/00000000-0000-0000-0000-0000604f1502"
       (reference "D4") (unit 1) (value "BLUE") (footprint "LED_SMD:LED_0805_2012Metric")
     )
-    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/a253db53-2d47-438f-9c9a-c957c233ec0b"
-      (reference "D5") (unit 1) (value "D_Bridge_+-AA") (footprint "Rectifiers:S250")
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/bad8884f-835a-4957-b5e1-9511f555f1ae"
+      (reference "D5") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
-    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/43e0ddfe-9c81-46cc-9e22-6b2de1757565"
-      (reference "D6") (unit 1) (value "D_Bridge_+-AA") (footprint "Rectifiers:S250")
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/7784c5e1-c8f8-4360-b9ed-7697b992d6bc"
+      (reference "D6") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
     (path "/00000000-0000-0000-0000-0000603f03f2"
       (reference "D7") (unit 1) (value "ESDA6V1-5SC6") (footprint "Package_TO_SOT_SMD:SOT-23-6")
@@ -5239,6 +5239,24 @@
     )
     (path "/8ad9591d-f8f5-40d0-bda3-1a755a02871c"
       (reference "D16") (unit 1) (value "RED") (footprint "LED_SMD:LED_0805_2012Metric")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/061f8a95-3bb5-4965-85ac-29b2a600bb05"
+      (reference "D17") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/bcc3f08e-5095-43e0-bec3-a89bc8da59ef"
+      (reference "D18") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/c8845a7d-3c21-4918-b83f-181ef38910b2"
+      (reference "D19") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/0b4e11cd-6303-4dda-b22b-e38b37297a32"
+      (reference "D20") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/2908c3c2-0fea-4471-ae98-9af826148526"
+      (reference "D21") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/58096fc6-4821-4b8f-a096-4104aaee4de2"
+      (reference "D22") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/0c5aebc0-e6d2-4505-8f7d-b88ca679901b"
       (reference "F1") (unit 1) (value "1A") (footprint "Fuse:Fuse_1206_3216Metric")
