@@ -5411,6 +5411,12 @@
     (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/dc2df260-7707-4aad-81ef-3b5d274d574b"
       (reference "R28") (unit 1) (value "47k") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/443f974d-26a8-4fab-9af9-168941b9ef53"
+      (reference "R29") (unit 1) (value "1k") (footprint "Resistor_SMD:R_0805_2012Metric")
+    )
+    (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/ce575fb8-4a32-41f6-8e0e-58d591888ddb"
+      (reference "R30") (unit 1) (value "1k") (footprint "Resistor_SMD:R_0805_2012Metric")
+    )
     (path "/857c828a-990f-45e3-8d14-cc15748fc857"
       (reference "SW1") (unit 1) (value "SW_Push") (footprint "Button_Switch_THT:SW_PUSH_6mm_H4.3mm")
     )
