@@ -3570,7 +3570,7 @@
     (property "Datasheet" "~" (id 3) (at 189.865 43.18 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "C45783" (id 4) (at 189.865 43.18 0)
+    (property "LCSC" "C15850" (id 4) (at 189.865 43.18 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 34804b3a-ae01-47d2-af15-f5437ee210cf))
@@ -5560,10 +5560,10 @@
       (reference "D9") (unit 1) (value "GR") (footprint "LED_SMD:LED_0805_2012Metric")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/1a831434-d82a-437c-a810-d2429e3e53d0"
-      (reference "D10") (unit 1) (value "1N4148") (footprint "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
+      (reference "D10") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/065d9eae-2017-428e-9561-ae4591beda84"
-      (reference "D11") (unit 1) (value "1N4148") (footprint "Diode_SMD:D_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
+      (reference "D11") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/634a928d-3c0e-46a8-8685-72733a9d516c"
       (reference "D12") (unit 1) (value "BLUE") (footprint "LED_SMD:LED_0805_2012Metric")
