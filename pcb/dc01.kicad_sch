@@ -6,8 +6,8 @@
 
   (title_block
     (title "DCC cutter DC-01 - overall schematics")
-    (date "2023-01-22")
-    (rev "1.0")
+    (date "2023-04-20")
+    (rev "1.1")
     (company "Model Railroader Club Brno I – KMŽ Brno I – https://kmz-brno.cz/")
     (comment 1 "Jan Horáček")
     (comment 2 "https://github.com/kmzbrnoI/dc01")
@@ -5549,6 +5549,12 @@
     (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/86bff016-4e7e-48b7-b766-57bbc56d17b7"
       (reference "#PWR044") (unit 1) (value "+3V3") (footprint "")
     )
+    (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/841dd03d-74b6-43d8-adad-a035d6f8c582"
+      (reference "#PWR045") (unit 1) (value "GND") (footprint "")
+    )
+    (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/b4a4aa1c-1821-4480-a984-9b13f3a7b2fd"
+      (reference "#PWR046") (unit 1) (value "GND") (footprint "")
+    )
     (path "/46afb61d-4e7e-49dd-bfb8-268d70a296dd"
       (reference "#PWR0102") (unit 1) (value "+3V3") (footprint "")
     )
@@ -5833,6 +5839,12 @@
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/ce575fb8-4a32-41f6-8e0e-58d591888ddb"
       (reference "R30") (unit 1) (value "1k") (footprint "Resistor_SMD:R_0805_2012Metric")
+    )
+    (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/f8c49a60-31e5-48bd-ade7-39828e898fae"
+      (reference "R31") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0805_2012Metric")
+    )
+    (path "/2cf54f45-b5f3-43f0-9920-2b504cf8dc98/009d31e7-946b-44b6-8ac4-82a1db8f9c84"
+      (reference "R32") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
     (path "/857c828a-990f-45e3-8d14-cc15748fc857"
       (reference "SW1") (unit 1) (value "SW_Push") (footprint "Button_Switch_THT:SW_PUSH_6mm_H4.3mm")
