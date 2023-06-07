@@ -539,6 +539,11 @@
     (uuid ff279ba7-8699-4565-88ba-25199962f82b)
   )
 
+  (text "Pulse width: ~2.4 ms" (at 83.82 95.885 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 5bddfbaa-8f94-44f1-901b-3b158c2cc156)
+  )
+
   (hierarchical_label "REL1IN" (shape input) (at 55.88 66.04 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid 05994bc8-87f2-4b3b-a919-5d78d6e6b6ca)
