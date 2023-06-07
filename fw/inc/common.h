@@ -1,4 +1,4 @@
-/* Common definitions & constants for whole MTB-USB board */
+/* Common definitions & constants for whole DC-01 module */
 
 #pragma once
 
