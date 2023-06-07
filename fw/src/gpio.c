@@ -10,15 +10,23 @@ const PinDef pin_usb_dn = {GPIOA, GPIO_PIN_11};
 const PinDef pin_usb_dp = {GPIOA, GPIO_PIN_12};
 const PinDef pin_usb_dp_pullup = {USBD_DP_PORT, 1 << USBD_DP_PIN};
 
+const PinDef pin_btn_override = {GPIOB, GPIO_PIN_9};
+const PinDef pin_btn_go = {GPIOB, GPIO_PIN_7};
+const PinDef pin_led_go = {GPIOB, GPIO_PIN_11};
+const PinDef pin_btn_stop = {GPIOB, GPIO_PIN_8};
+const PinDef pin_led_stop = {GPIOB, GPIO_PIN_10};
+
+const PinDef pin_out_alert = {GPIOB, GPIO_PIN_5};
+const PinDef pin_out_on = {GPIOB, GPIO_PIN_6};
+
+const PinDef pin_dcc1 = {GPIOB, GPIO_PIN_0};
+const PinDef pin_dcc2 = {GPIOB, GPIO_PIN_1};
+
+const PinDef pin_relay1 = {GPIOB, GPIO_PIN_2};
+const PinDef pin_relay2 = {GPIOB, GPIO_PIN_3};
+
 const PinDef pin_debug_a = {GPIOA, GPIO_PIN_8};
 const PinDef pin_debug_b = {GPIOA, GPIO_PIN_9};
-
-const PinDef pin_usart_mtb_rx = {GPIOB, GPIO_PIN_11};
-const PinDef pin_usart_mtb_tx = {GPIOB, GPIO_PIN_10};
-const PinDef pin_usart_mtb_dir = {GPIOB, GPIO_PIN_2};
-
-const PinDef pin_i2c_scl = {GPIOB, GPIO_PIN_8};
-const PinDef pin_i2c_sda = {GPIOB, GPIO_PIN_9};
 
 const PinDef pin_debug_cts = {GPIOA, GPIO_PIN_0};
 const PinDef pin_debug_tx = {GPIOA, GPIO_PIN_2};
@@ -36,10 +44,11 @@ void gpio_init(void) {
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_GPIOE_CLK_ENABLE();
 
-	/*Configure GPIO pins : PB2 LED_BLUE_Pin LED_RED_Pin RED_YEL_Pin LED_GR_Pin */
 	gpio_pins_init(
 		GPIOB,
-		pin_led_blue.pin | pin_led_red.pin | pin_led_yellow.pin | pin_led_green.pin,
+		pin_led_blue.pin | pin_led_red.pin | pin_led_yellow.pin | pin_led_green.pin |
+			pin_led_go.pin | pin_led_stop.pin | pin_out_alert.pin | pin_out_on.pin |
+			pin_relay1.pin | pin_relay2.pin,
 		GPIO_MODE_OUTPUT_PP,
 		GPIO_NOPULL,
 		GPIO_SPEED_FREQ_LOW,
@@ -49,6 +58,12 @@ void gpio_init(void) {
 	gpio_pin_init(pin_usb_dn, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, false);
 	gpio_pin_init(pin_usb_dp, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, false);
 	gpio_pin_init(pin_usb_dp_pullup, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, false);
+
+	gpio_pin_init(pin_btn_go, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, false);
+	gpio_pin_init(pin_btn_stop, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, false);
+	gpio_pin_init(pin_btn_override, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, false);
+	gpio_pin_init(pin_dcc1, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, false);
+	gpio_pin_init(pin_dcc2, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, false);
 
 	gpio_pin_init(pin_debug_a, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, false);
 	gpio_pin_init(pin_debug_b, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH, false);
