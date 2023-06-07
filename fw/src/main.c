@@ -55,8 +55,7 @@ int main(void) {
 	init();
 
 	while (true) {
-		// poll_usb_tx_flags();
-		HAL_Delay(1);
+		poll_usb_tx_flags();
 	}
 }
 
@@ -129,14 +128,14 @@ bool clock_init(void) {
 	__HAL_RCC_TIM2_CLK_ENABLE();
 	__HAL_RCC_TIM3_CLK_ENABLE();
 
-	// Timer 2 @ 50 us (MTBbus timeout)
+	// Timer 2 @ 100 us
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	h_tim2.Instance = TIM2;
 	h_tim2.Init.Prescaler = 32;
 	h_tim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	h_tim2.Init.Period = 73;
+	h_tim2.Init.Period = 146;
 	h_tim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	h_tim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&h_tim2) != HAL_OK)
@@ -158,7 +157,7 @@ bool clock_init(void) {
 	h_tim3.Instance = TIM3;
 	h_tim3.Init.Prescaler = 128;
 	h_tim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	h_tim3.Init.Period = 372;
+	h_tim3.Init.Period = 186;
 	h_tim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	h_tim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&h_tim3) != HAL_OK)
@@ -257,14 +256,19 @@ void SysTick_Handler(void) {
 }
 
 void TIM2_IRQHandler(void) {
-	// Timer 2 @ 50 us (20 kHz)
+	// Timer 2 @ 100 us (10 kHz)
+	if (cdc_dtr_ready) {
+		gpio_pin_toggle(pin_relay1);
+		gpio_pin_toggle(pin_relay2);
+	}
+
 	HAL_TIM_IRQHandler(&h_tim2);
 }
 
 void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
 
-	// leds_update_1ms();
+	leds_update_1ms();
 	if (h_iwdg.Instance != NULL)
 		HAL_IWDG_Refresh(&h_iwdg);
 	HAL_TIM_IRQHandler(&h_tim3);
