@@ -55,11 +55,14 @@ int main(void) {
 	init();
 
 	while (true) {
-		poll_usb_tx_flags();
+		// poll_usb_tx_flags();
+		HAL_Delay(1);
 	}
 }
 
 void init(void) {
+	h_iwdg.Instance = NULL;
+
 	if (!clock_init())
 		error_handler();
 	HAL_Init();
@@ -75,12 +78,10 @@ void init(void) {
 		error_handler();
 
 	cdc_init();
-
 	debug_uart_init();
-
 	__HAL_AFIO_REMAP_SWJ_NOJTAG();
 
-	HAL_Delay(100);
+	HAL_Delay(200);
 
 	gpio_pin_write(pin_led_red, false);
 	if (cdc_dtr_ready)
@@ -209,7 +210,6 @@ void error_handler(void) {
 	while (true);
 }
 
-
 static bool iwdg_init(void) {
 	h_iwdg.Instance = IWDG;
 	h_iwdg.Init.Prescaler = IWDG_PRESCALER_4; // Watchdog counter decrements each 100 us
@@ -221,16 +221,6 @@ static bool iwdg_init(void) {
 void assert_failed(uint8_t *file, uint32_t line) {
 }
 #endif /* USE_FULL_ASSERT */
-
-static inline void reboot_to_dfu() {
-	__disable_irq();
-	cdc_deinit();
-
-	volatile uint32_t* st = (uint32_t*)0x020004ffc; // __stack
-	*st = 0x157F32D4; // DFU_BOOTKEY
-
-	NVIC_SystemReset();
-}
 
 /* Interrupt handlers --------------------------------------------------------*/
 
@@ -274,8 +264,9 @@ void TIM2_IRQHandler(void) {
 void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
 
-	leds_update_1ms();
-	HAL_IWDG_Refresh(&h_iwdg);
+	// leds_update_1ms();
+	if (h_iwdg.Instance != NULL)
+		HAL_IWDG_Refresh(&h_iwdg);
 	HAL_TIM_IRQHandler(&h_tim3);
 }
 

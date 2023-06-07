@@ -154,7 +154,7 @@ clean:
 	-rm -fR $(BUILD_DIR)
 
 flash_stlink:
-	st-flash --reset write $(BUILD_DIR)/$(TARGET).bin 0x08001000
+	st-flash --reset write $(BUILD_DIR)/$(TARGET).bin 0x08000000
 
 -include $(wildcard $(BUILD_DIR)/*.d)
 

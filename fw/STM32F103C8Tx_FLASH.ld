@@ -64,7 +64,7 @@ _Bootloader_Region_Size = 0x1000;
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 20K
-FLASH (rx)      : ORIGIN = 0x8000000 + _Bootloader_Region_Size, LENGTH = 64K - _Bootloader_Region_Size
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 64K
 }
 
 /* Define output sections */
