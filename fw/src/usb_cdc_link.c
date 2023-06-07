@@ -12,7 +12,7 @@ static void main_cdc_tx(usbd_device *dev, uint8_t event, uint8_t ep);
 
 struct {
 	uint32_t pos;
-	uint8_t fifo[CDC_MTBUSB_BUF_SIZE];
+	uint8_t fifo[CDC_DC_BUF_SIZE];
 } rx;
 
 struct {
@@ -54,9 +54,9 @@ enum {
 
 const struct usb_string_descriptor lang_desc = USB_ARRAY_DESC(USB_LANGID_ENG_US);
 const struct usb_string_descriptor manuf_desc_en = USB_STRING_DESC("KMZ Brno I");
-const struct usb_string_descriptor prod_desc_en = USB_STRING_DESC("MTB-USB v4");
-const struct usb_string_descriptor cdc_iface_desc_en = USB_STRING_DESC("MTB-USB Serial Interface");
-const struct usb_string_descriptor debug_iface_desc_en = USB_STRING_DESC("MTB-USB v4 Debug UART");
+const struct usb_string_descriptor prod_desc_en = USB_STRING_DESC("DC-01");
+const struct usb_string_descriptor cdc_iface_desc_en = USB_STRING_DESC("DC-01 Serial Interface");
+const struct usb_string_descriptor debug_iface_desc_en = USB_STRING_DESC("DC-01 Debug UART");
 struct usb_string_descriptor serial_number_desc_en = USB_STRING_DESC("ffffffffffffffffffffffff"); // will be filled later
 
 static const struct usb_string_descriptor* const dtable[STRDESC_MAX] = {
@@ -561,7 +561,7 @@ bool cdc_main_can_send(void) {
 }
 
 bool _cdc_main_send(uint8_t command_code, uint8_t *data, size_t datasize, bool copy) {
-	if ((!cdc_main_can_send()) || (datasize > CDC_MTBUSB_BUF_SIZE-4))
+	if ((!cdc_main_can_send()) || (datasize > CDC_DC_BUF_SIZE-4))
 		return false;
 
 	led_activate(pin_led_yellow, 50, 50);
@@ -596,12 +596,12 @@ bool cdc_main_send_nocopy(uint8_t command_code, size_t datasize) {
 }
 
 bool cdc_send_ack(void) {
-	return cdc_main_send_nocopy(MTBUSB_CMD_MP_ACK, 0);
+	return cdc_main_send_nocopy(DC_CMD_MP_ACK, 0);
 }
 
 bool cdc_send_error(uint8_t error_code, uint8_t command_code, uint8_t module) {
 	uint8_t buf[3] = {error_code, command_code, module};
-	return cdc_main_send_copy(MTBUSB_CMD_MP_ERROR, buf, 3);
+	return cdc_main_send_copy(DC_CMD_MP_ERROR, buf, 3);
 }
 
 /* Debug CDC -----------------------------------------------------------------*/
