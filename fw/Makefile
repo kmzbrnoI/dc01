@@ -1,4 +1,4 @@
-TARGET = mtb-usb-4
+TARGET = dc01
 DEBUG = 1
 OPT = -Os
 BUILD_DIR = build
