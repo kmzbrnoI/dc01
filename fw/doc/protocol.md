@@ -52,11 +52,11 @@ natively.
 * Command Code byte: `0x20`.
 * Standard abbreviation: `DC_MP_INFO`.
 * Data bytes:
-  0. Firmware version major
-  1. Firmware version minor
+   1. Firmware version major
+   2. Firmware version minor
 * In response to: [*DC-01 Information Request*](#pm-info).
 
-### `0x11` DC-01 state <a name="mp-state></a>
+### `0x11` DC-01 state <a name="mp-state"></a>
 
 * Report general state of DC-01.
 * Command Code byte: `0x11`.
@@ -65,7 +65,7 @@ natively.
   - See [operation.md](operation.md) for bytes description.
 * This packet is sent to PC automatically each 500 ms.
 
-### `0x12` DC-01 Big relay test status <a name="mp-brstatus></a>
+### `0x12` DC-01 Big relay test status <a name="mp-brstatus"></a>
 
 * Report state of DC-01 Big relay test.
 * Command Code byte: `0x12`.

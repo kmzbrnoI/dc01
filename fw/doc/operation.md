@@ -27,23 +27,23 @@ Test sequence:
 
 1. Turn off both relays.
 2. Wait for single side to be active.
-   - If not deactivated within 1 second → error XX.
+    - If not deactivated within 1 second → error XX.
 3. Determine input & output side.
 4. Activate both relays.
 5. Check DCC is present on output.
-   - If output DCC does not appear within 1 s → error `BRT_DCC_NOT_APPEARED`
+    - If output DCC does not appear within 1 s → error `BRT_DCC_NOT_APPEARED`
 6. Turn off relay 1.
 7. Check DCC is absent on output.
-   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
+    - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 8. Turn on relay 1.
 9. Check DCC is present on output.
-   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
+    - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 10. Turn off relay 2.
 11. Check DCC is absent on output.
-   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
+    - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 12. Turn on relay 2.
 13. Check DCC is present on output.
-   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
+    - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 14. Set relays to desired state.
 15. *Test finished.*
 
