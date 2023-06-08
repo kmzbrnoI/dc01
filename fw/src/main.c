@@ -102,10 +102,10 @@ void init(void) {
 	HAL_Delay(200);
 
 	gpio_pin_write(pin_led_red, false);
-	if (cdc_dtr_ready)
-		gpio_pin_write(pin_led_yellow, false);
+	gpio_pin_write(pin_led_yellow, false);
 	gpio_pin_write(pin_led_green, false);
-	gpio_pin_write(pin_led_blue, false);
+	if (cdc_dtr_ready)
+		gpio_pin_write(pin_led_blue, false);
 }
 
 bool clock_init(void) {

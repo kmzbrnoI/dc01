@@ -358,7 +358,7 @@ static usbd_respond cdc_control_main(usbd_device* dev, usbd_ctlreq* req) {
 		if (cdc_dtr_ready && !dtr)
 			cdc_main_died();
 		cdc_dtr_ready = dtr;
-		gpio_pin_write(pin_led_yellow, !cdc_dtr_ready);
+		gpio_pin_write(pin_led_blue, !cdc_dtr_ready);
 		return usbd_ack;
 	}
 	case USB_CDC_SET_LINE_CODING: {
@@ -506,7 +506,7 @@ static void main_cdc_rx(usbd_device *dev, uint8_t event, uint8_t ep) {
 		return;
 
 	if (cdc_dtr_ready)
-		led_activate(pin_led_yellow, 50, 50);
+		led_activate(pin_led_blue, 50, 50);
 
 	const size_t RX_MAX_DELAY_MS = 20;
 	static size_t last_time = 0;
@@ -564,7 +564,7 @@ bool _cdc_main_send(uint8_t command_code, uint8_t *data, size_t datasize, bool c
 	if ((!cdc_main_can_send()) || (datasize > CDC_DC_BUF_SIZE-4))
 		return false;
 
-	led_activate(pin_led_yellow, 50, 50);
+	led_activate(pin_led_blue, 50, 50);
 
 	cdc_tx.separate.magic1 = 0x37;
 	cdc_tx.separate.magic2 = 0xE2;
