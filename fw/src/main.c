@@ -39,6 +39,10 @@ typedef union {
 
 volatile DeviceUsbTxReq device_usb_tx_req;
 
+DCmode dcmode;
+bool dccConnected;
+uint8_t failureCode;
+
 /* Private function prototypes -----------------------------------------------*/
 
 static void error_handler();
@@ -67,6 +71,10 @@ void init(void) {
 	HAL_Init();
 	gpio_init();
 	leds_init();
+
+	dcmode = mInitializing;
+	dccConnected = false;
+	failureCode = DCFAIL_NOFAILURE;
 
 	gpio_pin_write(pin_led_red, true);
 	gpio_pin_write(pin_led_yellow, true);
