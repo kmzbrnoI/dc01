@@ -21,6 +21,7 @@
 #include "common.h"
 #include "leds.h"
 #include "debounce.h"
+#include "selftest.h"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -34,6 +35,7 @@ typedef union {
 	struct {
 		bool info: 1;
 		bool state: 1;
+		bool brtsState: 1;
 	} sep;
 } DeviceUsbTxReq;
 
@@ -357,6 +359,13 @@ static inline void poll_usb_tx_flags(void) {
 
 		if (cdc_main_send_nocopy(DC_CMD_MP_STATE, 2))
 			device_usb_tx_req.sep.state = false;
+	} else if (device_usb_tx_req.sep.brtsState) {
+		cdc_tx.separate.data[0] = brTestState;
+		cdc_tx.separate.data[1] = brTestStep;
+		cdc_tx.separate.data[2] = brTestError;
+
+		if (cdc_main_send_nocopy(DC_CMD_MP_BRSTATE, 3))
+			device_usb_tx_req.sep.brtsState = false;
 	}
 }
 
@@ -459,4 +468,20 @@ bool IsDCCPCAlive() {
 
 void dccOnTimeout(void) {
 	setDccConnected(false);
+}
+
+void brtest_finished(void) {
+	device_usb_tx_req.sep.brtsState = true;
+
+	if (dcmode == mInitializing)
+		setMode(mNormalOp);
+}
+
+void brtest_failed(void) {
+	device_usb_tx_req.sep.brtsState = true;
+	setMode(mFailure);
+}
+
+void brtest_changed(void) {
+	device_usb_tx_req.sep.brtsState = true;
 }

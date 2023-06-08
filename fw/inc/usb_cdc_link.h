@@ -50,6 +50,7 @@ int cdc_debug_send(uint8_t *data, size_t datasize);
 
 #define DC_CMD_MP_INFO 0x10
 #define DC_CMD_MP_STATE 0x11
+#define DC_CMD_MP_BRSTATE 0x12
 
 #define DC_ERROR_NO_RESPONSE 0x01
 #define DC_ERROR_FULL_BUFFER 0x02
