@@ -3,7 +3,7 @@ DC-01 Device Operation Description
 
 ## DC-01's state
 
-`0b0MMM0NFC 0xEE`
+`0b0MMM00IC 0xEE`
 
 * `MM`: mode
    - 0: initialization
