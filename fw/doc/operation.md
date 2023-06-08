@@ -1,5 +1,5 @@
-DC-01 ↔ PC Device Operation Description
-=======================================
+DC-01 Device Operation Description
+==================================
 
 ## DC-01's state
 
@@ -29,23 +29,23 @@ Test sequence:
 
 1. Turn off both relays.
 2. Wait for single side to be active.
-  - If not deactivated within 1 second → error XX.
+   - If not deactivated within 1 second → error XX.
 3. Determine input & output side.
 4. Activate both relays.
 5. Check DCC is present on output.
-  - If output DCC does not appear within 1 s → error XX.
+   - If output DCC does not appear within 1 s → error XX.
 6. Turn off relay 1.
 7. Check DCC is absent on output.
-  - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error XX.
 8. Turn on relay 1.
 9. Check DCC is present on output.
-  - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error XX.
 10. Turn off relay 2.
 11. Check DCC is absent on output.
-  - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error XX.
 12. Turn on relay 2.
 13. Check DCC is present on output.
-  - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error XX.
 14. Set relays to desired state.
 15. *Test finished.*
 
@@ -71,7 +71,8 @@ Big relay test status consists of 3 bytes.
 
 ### Continuous test
 
-In normal operation mode and in override mode
+In normal operation mode and in override mode DCC is checked on both sides
+based on current state. Error is reported as system failure.
 
 ### DCC measuring
 
