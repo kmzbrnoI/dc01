@@ -10,6 +10,10 @@ typedef struct {
 	uint32_t pin;
 } PinDef;
 
+static inline bool pindef_eq(PinDef a, PinDef b) {
+	return (a.port == b.port) && (a.pin == b.pin);
+}
+
 extern const PinDef pin_led_red;
 extern const PinDef pin_led_green;
 extern const PinDef pin_led_blue;

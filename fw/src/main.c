@@ -20,6 +20,7 @@
 #include "gpio.h"
 #include "common.h"
 #include "leds.h"
+#include "debounce.h"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -71,6 +72,7 @@ void init(void) {
 	HAL_Init();
 	gpio_init();
 	leds_init();
+	debounce_init();
 
 	dcmode = mInitializing;
 	dccConnected = false;
@@ -270,6 +272,8 @@ void TIM2_IRQHandler(void) {
 		gpio_pin_toggle(pin_relay2);
 	}
 
+	debounce_update();
+
 	HAL_TIM_IRQHandler(&h_tim2);
 }
 
@@ -323,4 +327,30 @@ static inline void poll_usb_tx_flags(void) {
 }
 
 void cdc_main_died() {
+}
+
+/* IO ------------------------------------------------------------------------*/
+
+void debounce_on_fall(PinDef pin) {
+	if (pindef_eq(pin, pin_btn_go)) {
+		gpio_pin_toggle(pin_led_go);
+	} else if (pindef_eq(pin, pin_btn_stop)) {
+		gpio_pin_toggle(pin_led_stop);
+	} else if (pindef_eq(pin, pin_btn_override)) {
+		gpio_pin_toggle(pin_led_blue);
+	} else if (pindef_eq(pin, pin_dcc1)) {
+		gpio_pin_toggle(pin_led_red);
+	} else if (pindef_eq(pin, pin_dcc2)) {
+		gpio_pin_toggle(pin_led_green);
+	}
+}
+
+void debounce_on_raise(PinDef pin) {
+	if (pindef_eq(pin, pin_btn_override)) {
+		gpio_pin_toggle(pin_led_blue);
+	} else if (pindef_eq(pin, pin_dcc1)) {
+		gpio_pin_toggle(pin_led_red);
+	} else if (pindef_eq(pin, pin_dcc2)) {
+		gpio_pin_toggle(pin_led_green);
+	}
 }
