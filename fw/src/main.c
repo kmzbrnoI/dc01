@@ -32,9 +32,8 @@ IWDG_HandleTypeDef h_iwdg;
 typedef union {
 	size_t all;
 	struct {
-		bool ack :1;
 		bool info: 1;
-		bool full_buffer :1;
+		bool state: 1;
 	} sep;
 } DeviceUsbTxReq;
 
@@ -73,6 +72,8 @@ void init(void) {
 	gpio_init();
 	leds_init();
 	debounce_init();
+
+	device_usb_tx_req.all = 0;
 
 	dcmode = mInitializing;
 	dccConnected = false;
@@ -267,7 +268,7 @@ void SysTick_Handler(void) {
 
 void TIM2_IRQHandler(void) {
 	// Timer 2 @ 100 us (10 kHz)
-	if (cdc_dtr_ready) {
+	if (dccConnected) {
 		gpio_pin_toggle(pin_relay1);
 		gpio_pin_toggle(pin_relay2);
 	}
@@ -279,6 +280,14 @@ void TIM2_IRQHandler(void) {
 
 void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
+
+	#define STATE_SEND_COUNT 500 // ms
+	static volatile size_t state_send_counter = 0;
+	state_send_counter++;
+	if (state_send_counter == STATE_SEND_COUNT) {
+		device_usb_tx_req.sep.state = true;
+		state_send_counter = 0;
+	}
 
 	leds_update_1ms();
 	if (h_iwdg.Instance != NULL)
@@ -298,31 +307,19 @@ static inline void poll_usb_tx_flags(void) {
 	if (!cdc_main_can_send())
 		return; // USB busy → wait for next poll
 
-	if (device_usb_tx_req.sep.ack) {
-		cdc_send_ack();
-		device_usb_tx_req.sep.ack = false;
+	if (device_usb_tx_req.sep.info) {
+		cdc_tx.separate.data[0] = FW_VER_MAJOR;
+		cdc_tx.separate.data[1] = FW_VER_MINOR;
 
-	/*} else if (device_usb_tx_req.sep.info) {
-		cdc_tx.separate.data[0] = MTBUSB_TYPE;
-		cdc_tx.separate.data[1] = config.mtbbus_speed;
-		cdc_tx.separate.data[2] = FW_VER_MAJOR;
-		cdc_tx.separate.data[3] = FW_VER_MINOR;
-		cdc_tx.separate.data[4] = MTBBUS_PROT_VER_MAJOR;
-		cdc_tx.separate.data[5] = MTBBUS_PROT_VER_MINOR;
-
-		if (cdc_main_send_nocopy(MTBUSB_CMD_MP_INFO, 6))
+		if (cdc_main_send_nocopy(DC_CMD_MP_INFO, 2))
 			device_usb_tx_req.sep.info = false;
 
-	} else if (device_usb_tx_req.sep.active_modules) {
-		for (size_t i = 0; i < 32; i++)
-			cdc_tx.separate.data[i] = modules_active[i/4] >> (8*(i%4));
+	} else if (device_usb_tx_req.sep.state) {
+		cdc_tx.separate.data[0] = ((dcmode & 0x07) << 4) | (dccConnected & 1) | ((dccOnInput() & 1) << 1);
+		cdc_tx.separate.data[1] = failureCode;
 
-		if (cdc_main_send_nocopy(MTBUSB_CMD_MP_ACTIVE_MODULES_LIST, 32))
-			device_usb_tx_req.sep.active_modules = false;
-
-	} else if (device_usb_tx_req.sep.full_buffer) {
-		cdc_send_error(MTBUSB_ERROR_FULL_BUFFER, _error_full_buffer_command_code, _error_full_buffer_module_addr);
-		device_usb_tx_req.sep.full_buffer = false;*/
+		if (cdc_main_send_nocopy(DC_CMD_MP_STATE, 2))
+			device_usb_tx_req.sep.state = false;
 	}
 }
 
@@ -353,4 +350,13 @@ void debounce_on_raise(PinDef pin) {
 	} else if (pindef_eq(pin, pin_dcc2)) {
 		gpio_pin_toggle(pin_led_green);
 	}
+}
+
+void setMode(DCmode mode) {
+	dcmode = mode;
+	device_usb_tx_req.sep.state = true;
+}
+
+bool dccOnInput() {
+	return (!debounced[DEB_DCC1].state) || (!debounced[DEB_DCC2].state);
 }

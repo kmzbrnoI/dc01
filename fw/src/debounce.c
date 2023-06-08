@@ -5,7 +5,7 @@
 #define DCC_DEBOUNCE_THRESHOLD 10 // 1 ms
 #define DCC_DEBOUNCE_LIMIT 20 // 2 ms
 
-DebouncePin debounced[DEBOUNCED_COUNT] = {
+volatile DebouncePin debounced[DEBOUNCED_COUNT] = {
 	{.pin=&pin_btn_go, .threshold_raise=BTN_DEBOUNCE_THRESHOLD, .threshold_fall=0, .limit=BTN_DEBOUNCE_THRESHOLD},
 	{.pin=&pin_btn_stop, .threshold_raise=BTN_DEBOUNCE_THRESHOLD, .threshold_fall=0, .limit=BTN_DEBOUNCE_THRESHOLD},
 	{.pin=&pin_btn_override, .threshold_raise=BTN_DEBOUNCE_THRESHOLD, .threshold_fall=0, .limit=BTN_DEBOUNCE_THRESHOLD},

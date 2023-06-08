@@ -18,3 +18,6 @@ extern uint8_t failureCode;
 #define DCFAIL_NOFAILURE 0
 #define DCFAIL_BRT 1
 #define DCFAIL_CONT 2
+
+void setMode(DCmode);
+bool dccOnInput();

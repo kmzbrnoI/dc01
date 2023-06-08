@@ -42,18 +42,14 @@ bool cdc_main_send_copy(uint8_t command_code, uint8_t *data, size_t datasize);
 bool cdc_main_send_nocopy(uint8_t command_code, size_t datasize);
 void cdc_main_died(void);
 
-bool cdc_send_ack(void);
-bool cdc_send_error(uint8_t error_code, uint8_t command_code, uint8_t module);
-
 int cdc_debug_send(uint8_t *data, size_t datasize);
 
-#define DC_CMD_PM_CONTROL 0x01
-#define DC_CMD_PM_ASK_STATE 0x01
+#define DC_CMD_PM_INFO_REQ 0x10
+#define DC_CMD_PM_SET_STATE 0x11
 #define DC_CMD_PM_PING 0x02
 
-#define DC_CMD_MP_ACK 0x01
-#define DC_CMD_MP_ERROR 0x02
-#define DC_CMD_MP_STATE 0x10
+#define DC_CMD_MP_INFO 0x10
+#define DC_CMD_MP_STATE 0x11
 
 #define DC_ERROR_NO_RESPONSE 0x01
 #define DC_ERROR_FULL_BUFFER 0x02

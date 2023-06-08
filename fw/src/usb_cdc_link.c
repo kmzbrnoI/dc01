@@ -520,7 +520,7 @@ static void main_cdc_rx(usbd_device *dev, uint8_t event, uint8_t ep) {
 		size_t msg_begin_pos = 0;
 		size_t msg_length;
 		do {
-			if ((rx.fifo[msg_begin_pos] != 0x2A) || (rx.fifo[msg_begin_pos+1] != 0x42)) {
+			if ((rx.fifo[msg_begin_pos] != 0x37) || (rx.fifo[msg_begin_pos+1] != 0xE2)) {
 				rx.pos = 0;
 				return;
 			}
@@ -566,8 +566,8 @@ bool _cdc_main_send(uint8_t command_code, uint8_t *data, size_t datasize, bool c
 
 	led_activate(pin_led_yellow, 50, 50);
 
-	cdc_tx.separate.magic1 = 0x2A;
-	cdc_tx.separate.magic2 = 0x42;
+	cdc_tx.separate.magic1 = 0x37;
+	cdc_tx.separate.magic2 = 0xE2;
 	cdc_tx.separate.size = datasize+1;
 	cdc_tx.separate.command_code = command_code;
 
@@ -593,15 +593,6 @@ bool cdc_main_send_copy(uint8_t command_code, uint8_t *data, size_t datasize) {
 
 bool cdc_main_send_nocopy(uint8_t command_code, size_t datasize) {
 	return _cdc_main_send(command_code, NULL, datasize, false);
-}
-
-bool cdc_send_ack(void) {
-	return cdc_main_send_nocopy(DC_CMD_MP_ACK, 0);
-}
-
-bool cdc_send_error(uint8_t error_code, uint8_t command_code, uint8_t module) {
-	uint8_t buf[3] = {error_code, command_code, module};
-	return cdc_main_send_copy(DC_CMD_MP_ERROR, buf, 3);
 }
 
 /* Debug CDC -----------------------------------------------------------------*/

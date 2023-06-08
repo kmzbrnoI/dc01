@@ -14,7 +14,7 @@ while True:
     chars = ser.read(1)
     if not chars:
         continue
-    if chars[0] == 0x2A:
+    if chars[0] == 0x37:
         print()
         print(f'[{datetime.datetime.now().time()}]', end=' ')
         ser.read(2)  # ignore 2 characters

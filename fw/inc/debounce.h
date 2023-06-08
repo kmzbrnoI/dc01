@@ -17,7 +17,13 @@ typedef struct {
 
 #define DEBOUNCED_COUNT 5
 
-extern DebouncePin debounced[DEBOUNCED_COUNT];
+extern volatile DebouncePin debounced[DEBOUNCED_COUNT];
+
+#define DEB_BTN_GO 0
+#define DEB_BTN_STOP 1
+#define DEB_BTN_OVERRIDE 2
+#define DEB_DCC1 3
+#define DEB_DCC2 4
 
 void debounce_on_fall(PinDef pin);
 void debounce_on_raise(PinDef pin);
