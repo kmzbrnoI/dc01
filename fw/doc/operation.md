@@ -18,9 +18,7 @@ DC-01 Device Operation Description
   - 1: Big relay test failure
   - 2: Continuous test failure
 
-## Internal checks
-
-### Big relay test
+## Big relay test
 
 Test is performed every time input DCC appears and on startup. Consequently,
 when input DCC is lot, DC-01 cuts DCC so it can run test when DCC appears.
@@ -33,19 +31,19 @@ Test sequence:
 3. Determine input & output side.
 4. Activate both relays.
 5. Check DCC is present on output.
-   - If output DCC does not appear within 1 s → error XX.
+   - If output DCC does not appear within 1 s → error `BRT_DCC_NOT_APPEARED`
 6. Turn off relay 1.
 7. Check DCC is absent on output.
-   - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 8. Turn on relay 1.
 9. Check DCC is present on output.
-   - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 10. Turn off relay 2.
 11. Check DCC is absent on output.
-   - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 12. Turn on relay 2.
 13. Check DCC is present on output.
-   - If output DCC does not disappear within 1 s → error XX.
+   - If output DCC does not disappear within 1 s → error `BRT_DCC_NOT_DISAPPEARED`.
 14. Set relays to desired state.
 15. *Test finished.*
 
@@ -54,7 +52,7 @@ Test sequence:
 * Test cannot be run in override mode – if switched to override mode during test,
   test is interrupted.
 
-#### Test status
+### Test status
 
 Big relay test status consists of 3 bytes.
 
@@ -69,12 +67,17 @@ Big relay test status consists of 3 bytes.
 * `TT`: last reached step of test
 * `EE`: error reported during test (0 = no error)
 
-### Continuous test
+### Test error codes
+
+* `BRT_DCC_NOT_APPEARED` = 1
+* `BRT_DCC_NOT_DISAPPEARED` = 2
+
+## Continuous test
 
 In normal operation mode and in override mode DCC is checked on both sides
 based on current state. Error is reported as system failure.
 
-### DCC measuring
+## DCC measuring
 
 DCC detection must be immune to RailCom cutouts. This means interrupt in DCC
 lasting 500 us must be still considered as active DCC. Shortest DCC packet
