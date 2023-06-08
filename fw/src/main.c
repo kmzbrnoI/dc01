@@ -44,6 +44,7 @@ volatile bool dccConnected;
 uint8_t failureCode;
 
 volatile bool req_debounce_update;
+volatile bool req_500ms_leds_update;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -52,8 +53,8 @@ static void init(void);
 static bool clock_init(void);
 static bool debug_uart_init(void);
 static inline void poll_usb_tx_flags(void);
-
 static bool iwdg_init(void);
+static void state_leds_update(void);
 
 /* Code ----------------------------------------------------------------------*/
 
@@ -64,6 +65,10 @@ int main(void) {
 		if (req_debounce_update) {
 			debounce_update();
 			req_debounce_update = false;
+		}
+		if (req_500ms_leds_update) {
+			state_leds_update();
+			req_500ms_leds_update = false;
 		}
 		poll_usb_tx_flags();
 	}
@@ -80,6 +85,7 @@ void init(void) {
 	debounce_init();
 
 	req_debounce_update = false;
+	req_500ms_leds_update = false;
 	device_usb_tx_req.all = 0;
 
 	//dcmode = mInitializing;
@@ -289,12 +295,12 @@ void TIM2_IRQHandler(void) {
 void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
 
-	#define STATE_SEND_COUNT 500 // ms
-	static volatile size_t state_send_counter = 0;
-	state_send_counter++;
-	if (state_send_counter >= STATE_SEND_COUNT) {
+	static volatile size_t counter_500ms = 0;
+	counter_500ms++;
+	if (counter_500ms >= 500) {
 		device_usb_tx_req.sep.state = true;
-		state_send_counter = 0;
+		req_500ms_leds_update = true;
+		counter_500ms = 0;
 	}
 
 	leds_update_1ms();
@@ -341,8 +347,10 @@ void debounce_on_fall(PinDef pin) {
 		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state))
 			setDccConnected(true);
 	} else if (pindef_eq(pin, pin_btn_stop)) {
-		setMode(mOverride);
-		setDccConnected(false);
+		if (dccConnected) {
+			setMode(mOverride);
+			setDccConnected(false);
+		}
 	} else if (pindef_eq(pin, pin_btn_override)) {
 		setMode(mOverride);
 	}
@@ -361,6 +369,27 @@ void setMode(DCmode mode) {
 		return;
 	dcmode = mode;
 	device_usb_tx_req.sep.state = true;
+
+	switch (mode) {
+	case mInitializing:
+		gpio_pin_write(pin_led_red, true);
+		gpio_pin_write(pin_led_yellow, true);
+		break;
+	case mNormalOp:
+	case mOverride:
+		gpio_pin_write(pin_led_red, false);
+		gpio_pin_write(pin_led_green, true);
+		break;
+	case mBigRelayTest:
+		gpio_pin_write(pin_led_red, false);
+		gpio_pin_write(pin_led_green, false);
+		gpio_pin_write(pin_led_yellow, true);
+		break;
+	case mFailure:
+		gpio_pin_write(pin_led_red, true);
+		gpio_pin_write(pin_led_green, false);
+		break;
+	}
 }
 
 bool dccOnInput() {
@@ -373,4 +402,26 @@ void setDccConnected(bool state) {
 	dccConnected = state;
 	gpio_pin_write(pin_led_go, state);
 	gpio_pin_write(pin_led_stop, !state);
+}
+
+void state_leds_update(void) {
+	switch (dcmode) {
+	case mInitializing:
+		gpio_pin_toggle(pin_led_yellow);
+		break;
+	case mNormalOp:
+		gpio_pin_toggle(pin_led_green);
+		break;
+	case mOverride:
+		gpio_pin_toggle(pin_led_green);
+		if (debounced[DEB_BTN_OVERRIDE].state)
+			gpio_pin_toggle(pin_led_yellow);
+		break;
+	case mBigRelayTest:
+		gpio_pin_toggle(pin_led_yellow);
+		break;
+	case mFailure:
+		gpio_pin_toggle(pin_led_red);
+		break;
+	}
 }
