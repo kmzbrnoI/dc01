@@ -19,6 +19,10 @@ extern uint8_t failureCode;
 #define DCFAIL_BRT 1
 #define DCFAIL_CONT 2
 
+#define DCCON_WARNING_MS 500
+#define DCCON_TIMEOUT_MS 1000
+
 void setMode(DCmode);
 bool dccOnInput();
 void setDccConnected(bool state);
+bool IsDCCPCAlive();

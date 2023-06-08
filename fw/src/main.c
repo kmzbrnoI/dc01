@@ -42,6 +42,7 @@ volatile DeviceUsbTxReq device_usb_tx_req;
 volatile DCmode dcmode;
 volatile bool dccConnected;
 uint8_t failureCode;
+volatile uint32_t dccon_timer_ms;
 
 volatile bool req_debounce_update;
 volatile bool req_500ms_leds_update;
@@ -55,6 +56,7 @@ static bool debug_uart_init(void);
 static inline void poll_usb_tx_flags(void);
 static bool iwdg_init(void);
 static void state_leds_update(void);
+static void dccOnTimeout(void);
 
 /* Code ----------------------------------------------------------------------*/
 
@@ -303,6 +305,17 @@ void TIM3_IRQHandler(void) {
 		counter_500ms = 0;
 	}
 
+	if (dccon_timer_ms < DCCON_TIMEOUT_MS) {
+		dccon_timer_ms++;
+		if ((dcmode == mNormalOp) && (dccon_timer_ms == DCCON_WARNING_MS)) {
+			gpio_pin_write(pin_led_yellow, true);
+		}
+		if ((dcmode == mNormalOp) && (dccon_timer_ms == DCCON_TIMEOUT_MS)) {
+			dccOnTimeout();
+			gpio_pin_write(pin_led_yellow, false);
+		}
+	}
+
 	leds_update_1ms();
 	if (h_iwdg.Instance != NULL)
 		HAL_IWDG_Refresh(&h_iwdg);
@@ -312,7 +325,17 @@ void TIM3_IRQHandler(void) {
 /* USB -----------------------------------------------------------------------*/
 
 void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
-	//} if (command_code == MTBUSB_CMD_PM_INFO_REQ) {
+	if ((command_code == DC_CMD_PM_SET_STATE) && (data_size >= 1)) {
+		bool state = (data[0] & 1);
+		if (state) {
+			dccon_timer_ms = 0;
+			gpio_pin_write(pin_led_yellow, false);
+		} else {
+			dccon_timer_ms = DCCON_TIMEOUT_MS;
+		}
+		if (dcmode == mNormalOp)
+			setDccConnected(state);
+	}
 }
 
 static inline void poll_usb_tx_flags(void) {
@@ -338,6 +361,8 @@ static inline void poll_usb_tx_flags(void) {
 }
 
 void cdc_main_died() {
+	if (dcmode == mNormalOp)
+		setDccConnected(false);
 }
 
 /* IO ------------------------------------------------------------------------*/
@@ -359,7 +384,7 @@ void debounce_on_fall(PinDef pin) {
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
 		// TODO: probably go to test
-		setDccConnected(false);
+		setDccConnected(IsDCCPCAlive());
 		setMode(mNormalOp);
 	}
 }
@@ -416,6 +441,8 @@ void state_leds_update(void) {
 		gpio_pin_toggle(pin_led_green);
 		if (debounced[DEB_BTN_OVERRIDE].state)
 			gpio_pin_toggle(pin_led_yellow);
+		else
+			gpio_pin_write(pin_led_yellow, false);
 		break;
 	case mBigRelayTest:
 		gpio_pin_toggle(pin_led_yellow);
@@ -424,4 +451,12 @@ void state_leds_update(void) {
 		gpio_pin_toggle(pin_led_red);
 		break;
 	}
+}
+
+bool IsDCCPCAlive() {
+	return dccon_timer_ms < DCCON_TIMEOUT_MS;
+}
+
+void dccOnTimeout(void) {
+	setDccConnected(false);
 }
