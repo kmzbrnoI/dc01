@@ -5,14 +5,14 @@
 
 typedef enum {
 	mInitializing = 0,
-	mOk = 1,
+	mNormalOp = 1,
 	mBigRelayTest = 2,
 	mOverride = 3,
 	mFailure = 4,
 } DCmode;
 
-extern DCmode dcmode;
-extern bool dccConnected;
+extern volatile DCmode dcmode;
+extern volatile bool dccConnected;
 extern uint8_t failureCode;
 
 #define DCFAIL_NOFAILURE 0
@@ -21,3 +21,4 @@ extern uint8_t failureCode;
 
 void setMode(DCmode);
 bool dccOnInput();
+void setDccConnected(bool state);

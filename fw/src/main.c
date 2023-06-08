@@ -39,9 +39,11 @@ typedef union {
 
 volatile DeviceUsbTxReq device_usb_tx_req;
 
-DCmode dcmode;
-bool dccConnected;
+volatile DCmode dcmode;
+volatile bool dccConnected;
 uint8_t failureCode;
+
+volatile bool req_debounce_update;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -59,6 +61,10 @@ int main(void) {
 	init();
 
 	while (true) {
+		if (req_debounce_update) {
+			debounce_update();
+			req_debounce_update = false;
+		}
 		poll_usb_tx_flags();
 	}
 }
@@ -73,10 +79,12 @@ void init(void) {
 	leds_init();
 	debounce_init();
 
+	req_debounce_update = false;
 	device_usb_tx_req.all = 0;
 
-	dcmode = mInitializing;
-	dccConnected = false;
+	//dcmode = mInitializing;
+	dcmode = mNormalOp;
+	setDccConnected(false);
 	failureCode = DCFAIL_NOFAILURE;
 
 	gpio_pin_write(pin_led_red, true);
@@ -273,7 +281,7 @@ void TIM2_IRQHandler(void) {
 		gpio_pin_toggle(pin_relay2);
 	}
 
-	debounce_update();
+	req_debounce_update = true;
 
 	HAL_TIM_IRQHandler(&h_tim2);
 }
@@ -284,7 +292,7 @@ void TIM3_IRQHandler(void) {
 	#define STATE_SEND_COUNT 500 // ms
 	static volatile size_t state_send_counter = 0;
 	state_send_counter++;
-	if (state_send_counter == STATE_SEND_COUNT) {
+	if (state_send_counter >= STATE_SEND_COUNT) {
 		device_usb_tx_req.sep.state = true;
 		state_send_counter = 0;
 	}
@@ -330,33 +338,39 @@ void cdc_main_died() {
 
 void debounce_on_fall(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_go)) {
-		gpio_pin_toggle(pin_led_go);
+		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state))
+			setDccConnected(true);
 	} else if (pindef_eq(pin, pin_btn_stop)) {
-		gpio_pin_toggle(pin_led_stop);
+		setMode(mOverride);
+		setDccConnected(false);
 	} else if (pindef_eq(pin, pin_btn_override)) {
-		gpio_pin_toggle(pin_led_blue);
-	} else if (pindef_eq(pin, pin_dcc1)) {
-		gpio_pin_toggle(pin_led_red);
-	} else if (pindef_eq(pin, pin_dcc2)) {
-		gpio_pin_toggle(pin_led_green);
+		setMode(mOverride);
 	}
 }
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
-		gpio_pin_toggle(pin_led_blue);
-	} else if (pindef_eq(pin, pin_dcc1)) {
-		gpio_pin_toggle(pin_led_red);
-	} else if (pindef_eq(pin, pin_dcc2)) {
-		gpio_pin_toggle(pin_led_green);
+		// TODO: probably go to test
+		setDccConnected(false);
+		setMode(mNormalOp);
 	}
 }
 
 void setMode(DCmode mode) {
+	if (dcmode == mode)
+		return;
 	dcmode = mode;
 	device_usb_tx_req.sep.state = true;
 }
 
 bool dccOnInput() {
 	return (!debounced[DEB_DCC1].state) || (!debounced[DEB_DCC2].state);
+}
+
+void setDccConnected(bool state) {
+	if (dccConnected != state)
+		device_usb_tx_req.sep.state = true;
+	dccConnected = state;
+	gpio_pin_write(pin_led_go, state);
+	gpio_pin_write(pin_led_stop, !state);
 }
