@@ -32,6 +32,17 @@ natively.
 * N.o. data bytes: 0.
 * Response: [*DC-01 Information*](#mp-info).
 
+### `0x11` Set DCC state <a name="pm-setstate"></a>
+
+* Set state of DCC cutter.
+* Command Code byte: `0x11`.
+* Standard abbreviation: `DC_PM_SET_STATE`.
+* N.o. data bytes: 1.
+  - 0: `0b0000000s`; `s`: if DCC should be on or off.
+* Response: [*DC-01 State*](#mp-state).
+* Packet with `s=1` must be sent to device each 200 ms (timeout 500 ms)
+  to assure DCC is on. In case of timeout, DC-01 cuts DCC.
+
 
 ## DC-01 → PC <a name="dc01topc"></a>
 
