@@ -46,8 +46,16 @@ volatile bool dccConnected;
 uint8_t failureCode;
 volatile uint32_t dccon_timer_ms;
 
-volatile bool req_debounce_update;
-volatile bool req_500ms_leds_update;
+typedef union {
+	size_t all;
+	struct {
+		bool debounce_update: 1;
+		bool leds_update: 1;
+		bool brtest_update: 1;
+	} sep;
+} InterruptReq;
+
+volatile InterruptReq interrupt_req;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -66,13 +74,13 @@ int main(void) {
 	init();
 
 	while (true) {
-		if (req_debounce_update) {
+		if (interrupt_req.sep.debounce_update) {
 			debounce_update();
-			req_debounce_update = false;
+			interrupt_req.sep.debounce_update = false;
 		}
-		if (req_500ms_leds_update) {
+		if (interrupt_req.sep.leds_update) {
 			state_leds_update();
-			req_500ms_leds_update = false;
+			interrupt_req.sep.leds_update = false;
 		}
 		poll_usb_tx_flags();
 	}
@@ -88,8 +96,7 @@ void init(void) {
 	leds_init();
 	debounce_init();
 
-	req_debounce_update = false;
-	req_500ms_leds_update = false;
+	interrupt_req.all = 0;
 	device_usb_tx_req.all = 0;
 
 	//dcmode = mInitializing;
@@ -291,8 +298,7 @@ void TIM2_IRQHandler(void) {
 		gpio_pin_toggle(pin_relay2);
 	}
 
-	req_debounce_update = true;
-
+	interrupt_req.sep.debounce_update = true;
 	HAL_TIM_IRQHandler(&h_tim2);
 }
 
@@ -303,7 +309,7 @@ void TIM3_IRQHandler(void) {
 	counter_500ms++;
 	if (counter_500ms >= 500) {
 		device_usb_tx_req.sep.state = true;
-		req_500ms_leds_update = true;
+		interrupt_req.sep.leds_update = true;
 		counter_500ms = 0;
 	}
 
