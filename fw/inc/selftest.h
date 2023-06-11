@@ -3,15 +3,24 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#define TEST_STEP_TIMEOUT 10 // 1000 ms single step timeout
+
 typedef enum {
 	brttStopped = 0,
 	brttInitTurnoff = 1,
+	brttWaitForSingleSide = 2,
+	brttBothOnWait = 3,
+	brttR1OffWait = 4,
+	brttR1OnWait = 5,
+	brttR2OffWait = 6,
+	brttR2Onwait = 7,
+	brttFinished,
 } BRTestStep;
 
 typedef enum {
 	brtsNotYetRun = 0,
 	brtsInProgress = 1,
-	brtsDone = 2,
+	brtsFinished = 2,
 	brtsFail = 3,
 	brtsInterrupted = 4,
 } BRTestState;
@@ -27,7 +36,7 @@ extern BRTestState brTestState;
 extern BRTestError brTestError;
 
 void brtest_init(void);
-void brtest_run(void);
+size_t brtest_start(void);
 void brtest_update(void); // call each 100ms
 void brtest_interrupt(void);
 bool brtest_ready(void);
