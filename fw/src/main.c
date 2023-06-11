@@ -42,8 +42,9 @@ typedef union {
 volatile DeviceUsbTxReq device_usb_tx_req;
 
 volatile DCmode dcmode;
-volatile bool dccConnected;
-uint8_t failureCode;
+volatile bool _relay1;
+volatile bool _relay2;
+uint8_t failure_code;
 volatile uint32_t dccon_timer_ms;
 
 typedef union {
@@ -105,8 +106,8 @@ void init(void) {
 
 	//dcmode = mInitializing;
 	dcmode = mNormalOp;
-	setDccConnected(false);
-	failureCode = DCFAIL_NOFAILURE;
+	set_relays(false, false);
+	failure_code = DCFAIL_NOFAILURE;
 
 	gpio_pin_write(pin_led_red, true);
 	gpio_pin_write(pin_led_yellow, true);
@@ -297,10 +298,10 @@ void SysTick_Handler(void) {
 
 void TIM2_IRQHandler(void) {
 	// Timer 2 @ 100 us (10 kHz)
-	if (dccConnected) {
+	if (_relay1)
 		gpio_pin_toggle(pin_relay1);
+	if (_relay2)
 		gpio_pin_toggle(pin_relay2);
-	}
 
 	interrupt_req.sep.debounce_update = true;
 	HAL_TIM_IRQHandler(&h_tim2);
@@ -349,7 +350,7 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 			dccon_timer_ms = DCCON_TIMEOUT_MS;
 		}
 		if (dcmode == mNormalOp)
-			setDccConnected(state);
+			set_relays(state, state);
 	}
 }
 
@@ -367,8 +368,8 @@ static inline void poll_usb_tx_flags(void) {
 			device_usb_tx_req.sep.info = false;
 
 	} else if (device_usb_tx_req.sep.state) {
-		cdc_tx.separate.data[0] = ((dcmode & 0x07) << 4) | (dccConnected & 1) | ((dccOnInput() & 1) << 1);
-		cdc_tx.separate.data[1] = failureCode;
+		cdc_tx.separate.data[0] = ((dcmode & 0x07) << 4) | (is_dcc_connected()) | ((dcc_at_least_one() & 1) << 1);
+		cdc_tx.separate.data[1] = failure_code;
 
 		if (cdc_main_send_nocopy(DC_CMD_MP_STATE, 2))
 			device_usb_tx_req.sep.state = false;
@@ -384,7 +385,7 @@ static inline void poll_usb_tx_flags(void) {
 
 void cdc_main_died() {
 	if (dcmode == mNormalOp)
-		setDccConnected(false);
+		set_relays(false, false);
 }
 
 /* IO ------------------------------------------------------------------------*/
@@ -392,27 +393,27 @@ void cdc_main_died() {
 void debounce_on_fall(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_go)) {
 		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state))
-			setDccConnected(true);
+			set_relays(true, true);
 	} else if (pindef_eq(pin, pin_btn_stop)) {
-		if (dccConnected) {
-			setMode(mOverride);
-			setDccConnected(false);
+		if (is_dcc_connected()) {
+			set_mode(mOverride);
+			set_relays(false, false);
 		}
 	} else if (pindef_eq(pin, pin_btn_override)) {
-		setMode(mOverride);
+		set_mode(mOverride);
 	}
 }
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
 		if (brtest_ready())
-			setMode(mBigRelayTest);
+			set_mode(mBigRelayTest);
 		else
-			setMode(mNormalOp);
+			set_mode(mNormalOp);
 	}
 }
 
-void setMode(DCmode mode) {
+void set_mode(DCmode mode) {
 	if (dcmode == mode)
 		return;
 	dcmode = mode;
@@ -424,7 +425,7 @@ void setMode(DCmode mode) {
 		gpio_pin_write(pin_led_yellow, true);
 		break;
 	case mNormalOp:
-		setDccConnected(IsDCCPCAlive());
+		set_relays(is_dcc_pc_alive(), is_dcc_pc_alive());
 		// intentionally no break here
 	case mOverride:
 		gpio_pin_write(pin_led_red, false);
@@ -437,27 +438,40 @@ void setMode(DCmode mode) {
 
 		size_t brtest_started = brtest_start();
 		if (brtest_started != 0) // TODO: check all situations in which this could happen
-			setMode(mFailure);
+			set_mode(mFailure);
 
 		break;
 	case mFailure:
 		gpio_pin_write(pin_led_red, true);
 		gpio_pin_write(pin_led_green, false);
-		dccConnected = false;
+		set_relays(false, false);
 		break;
 	}
 }
 
-bool dccOnInput() {
+bool dcc_at_least_one() {
 	return (!debounced[DEB_DCC1].state) || (!debounced[DEB_DCC2].state);
 }
 
-void setDccConnected(bool state) {
-	if (dccConnected != state)
+bool dcc_just_single(void) {
+	return (debounced[DEB_DCC1].state) ^ (debounced[DEB_DCC2].state);
+}
+
+bool dcc_both(void) {
+	return (!debounced[DEB_DCC1].state) || (!debounced[DEB_DCC2].state);
+}
+
+void set_relays(bool relay1, bool relay2) {
+	if ((relay1 && relay2) != (_relay1 && _relay2))
 		device_usb_tx_req.sep.state = true;
-	dccConnected = state;
-	gpio_pin_write(pin_led_go, state);
-	gpio_pin_write(pin_led_stop, !state);
+	_relay1 = relay1;
+	_relay2 = relay2;
+	gpio_pin_write(pin_led_go, relay1 && relay2);
+	gpio_pin_write(pin_led_stop, !(relay1 && relay2));
+}
+
+bool is_dcc_connected(void) {
+	return _relay1 && _relay2;
 }
 
 void state_leds_update(void) {
@@ -484,24 +498,24 @@ void state_leds_update(void) {
 	}
 }
 
-bool IsDCCPCAlive() {
+bool is_dcc_pc_alive() {
 	return dccon_timer_ms < DCCON_TIMEOUT_MS;
 }
 
 void dccOnTimeout(void) {
-	setDccConnected(false);
+	set_relays(false, false);
 }
 
 void brtest_finished(void) {
 	device_usb_tx_req.sep.brtsState = true;
 
 	if (dcmode == mInitializing)
-		setMode(mNormalOp);
+		set_mode(mNormalOp);
 }
 
 void brtest_failed(void) {
 	device_usb_tx_req.sep.brtsState = true;
-	setMode(mFailure);
+	set_mode(mFailure);
 }
 
 void brtest_changed(void) {

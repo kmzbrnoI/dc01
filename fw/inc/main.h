@@ -12,8 +12,7 @@ typedef enum {
 } DCmode;
 
 extern volatile DCmode dcmode;
-extern volatile bool dccConnected;
-extern uint8_t failureCode;
+extern uint8_t failure_code;
 
 #define DCFAIL_NOFAILURE 0
 #define DCFAIL_BRT 1
@@ -22,7 +21,11 @@ extern uint8_t failureCode;
 #define DCCON_WARNING_MS 500
 #define DCCON_TIMEOUT_MS 1000
 
-void setMode(DCmode);
-bool dccOnInput();
-void setDccConnected(bool state);
-bool IsDCCPCAlive();
+void set_mode(DCmode);
+void set_relays(bool relay1, bool relay2);
+bool is_dcc_connected(void);
+bool is_dcc_pc_alive(void);
+
+bool dcc_at_least_one(void);
+bool dcc_just_single(void);
+bool dcc_both(void);
