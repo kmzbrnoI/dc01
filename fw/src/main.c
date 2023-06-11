@@ -104,8 +104,7 @@ void init(void) {
 	interrupt_req.all = 0;
 	device_usb_tx_req.all = 0;
 
-	//dcmode = mInitializing;
-	dcmode = mNormalOp;
+	dcmode = mInitializing;
 	set_relays(false, false);
 	failure_code = DCFAIL_NOFAILURE;
 
@@ -121,7 +120,13 @@ void init(void) {
 	debug_uart_init();
 	__HAL_AFIO_REMAP_SWJ_NOJTAG();
 
-	HAL_Delay(200);
+	for (size_t i = 0; i < 200; i++) { // time must be enough for debounce
+		debounce_update(); // read DCC state
+		HAL_Delay(1); // this time does not corespond with main loop's debounce_update period!
+	}
+
+	// State of DCC inputs should be parsed now
+	set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
 
 	gpio_pin_write(pin_led_red, false);
 	gpio_pin_write(pin_led_yellow, false);
@@ -351,6 +356,8 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 		}
 		if (dcmode == mNormalOp)
 			set_relays(state, state);
+		else if (dcmode == mInitializing)
+			set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
 	}
 }
 
@@ -406,10 +413,7 @@ void debounce_on_fall(PinDef pin) {
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
-		if (brtest_ready())
-			set_mode(mBigRelayTest);
-		else
-			set_mode(mNormalOp);
+		set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
 	}
 }
 
