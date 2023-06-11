@@ -82,6 +82,10 @@ int main(void) {
 			state_leds_update();
 			interrupt_req.sep.leds_update = false;
 		}
+		if (interrupt_req.sep.brtest_update) {
+			brtest_update();
+			interrupt_req.sep.brtest_update = false;
+		}
 		poll_usb_tx_flags();
 	}
 }
@@ -307,6 +311,9 @@ void TIM3_IRQHandler(void) {
 
 	static volatile size_t counter_500ms = 0;
 	counter_500ms++;
+	if ((counter_500ms%100) == 0) {
+		interrupt_req.sep.brtest_update = true;
+	}
 	if (counter_500ms >= 500) {
 		device_usb_tx_req.sep.state = true;
 		interrupt_req.sep.leds_update = true;
@@ -398,9 +405,10 @@ void debounce_on_fall(PinDef pin) {
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
-		// TODO: probably go to test
-		setDccConnected(IsDCCPCAlive());
-		setMode(mNormalOp);
+		if (brtest_ready())
+			setMode(mBigRelayTest);
+		else
+			setMode(mNormalOp);
 	}
 }
 
@@ -416,6 +424,8 @@ void setMode(DCmode mode) {
 		gpio_pin_write(pin_led_yellow, true);
 		break;
 	case mNormalOp:
+		setDccConnected(IsDCCPCAlive());
+		// intentionally no break here
 	case mOverride:
 		gpio_pin_write(pin_led_red, false);
 		gpio_pin_write(pin_led_green, true);
@@ -424,10 +434,16 @@ void setMode(DCmode mode) {
 		gpio_pin_write(pin_led_red, false);
 		gpio_pin_write(pin_led_green, false);
 		gpio_pin_write(pin_led_yellow, true);
+
+		size_t brtest_started = brtest_start();
+		if (brtest_started != 0) // TODO: check all situations in which this could happen
+			setMode(mFailure);
+
 		break;
 	case mFailure:
 		gpio_pin_write(pin_led_red, true);
 		gpio_pin_write(pin_led_green, false);
+		dccConnected = false;
 		break;
 	}
 }
