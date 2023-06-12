@@ -47,6 +47,7 @@ volatile bool _relay2;
 uint8_t failure_code;
 volatile uint32_t dccon_timer_ms;
 bool brtest_request; // brtest_ready & brtest_request → start brtest
+volatile uint32_t brtest_timer;
 
 typedef union {
 	size_t all;
@@ -69,6 +70,7 @@ static inline void poll_usb_tx_flags(void);
 static bool iwdg_init(void);
 static void state_leds_update(void);
 static void dcc_on_timeout(void);
+static bool _brtest_is_time(void);
 
 /* Code ----------------------------------------------------------------------*/
 
@@ -89,8 +91,7 @@ int main(void) {
 			interrupt_req.sep.brtest_update = false;
 		}
 		if ((brtest_request) && (brtest_ready())) {
-			if (brtest_start() == 0)
-				brtest_request = false;
+			brtest_start();
 		}
 		poll_usb_tx_flags();
 	}
@@ -109,6 +110,7 @@ void init(void) {
 	interrupt_req.all = 0;
 	device_usb_tx_req.all = 0;
 	brtest_request = false;
+	brtest_timer = BRTEST_NOTEST_MAX_TIME;
 
 	dcmode = mInitializing;
 	set_relays(false, false);
@@ -322,6 +324,7 @@ void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
 
 	static volatile size_t counter_500ms = 0;
+	static volatile bool counter_1s = false;
 	counter_500ms++;
 	if ((counter_500ms%100) == 0) {
 		interrupt_req.sep.brtest_update = true;
@@ -330,6 +333,9 @@ void TIM3_IRQHandler(void) {
 		device_usb_tx_req.sep.state = true;
 		interrupt_req.sep.leds_update = true;
 		counter_500ms = 0;
+		counter_1s = !counter_1s;
+		if ((!counter_1s) && (brtest_timer < BRTEST_NOTEST_MAX_TIME))
+			brtest_timer++;
 	}
 
 	if (dccon_timer_ms < DCCON_TIMEOUT_MS) {
@@ -344,6 +350,7 @@ void TIM3_IRQHandler(void) {
 	}
 
 	leds_update_1ms();
+
 	if (h_iwdg.Instance != NULL)
 		HAL_IWDG_Refresh(&h_iwdg);
 	HAL_TIM_IRQHandler(&h_tim3);
@@ -361,7 +368,7 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 			dccon_timer_ms = DCCON_TIMEOUT_MS;
 		}
 		if (dcmode == mNormalOp) {
-			if ((state) && (!is_dcc_connected()) && (!brtest_running()))
+			if ((state) && (!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()))
 				brtest_request = true;
 			if (!brtest_running())
 				set_relays(state, state);
@@ -412,10 +419,13 @@ void cdc_main_died() {
 void debounce_on_fall(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_go)) {
 		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state)) {
-			brtest_request = true;
+			if (_brtest_is_time())
+				brtest_request = true;
 			set_relays(true, true);
 		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
+		if (brtest_running())
+			brtest_interrupt();
 		if (is_dcc_connected()) {
 			set_mode(mOverride);
 			set_relays(false, false);
@@ -427,7 +437,7 @@ void debounce_on_fall(PinDef pin) {
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
-		if ((!is_dcc_connected()) && (!brtest_running()))
+		if ((!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()) && (is_dcc_pc_alive()))
 			brtest_request = true;
 		set_mode(mNormalOp);
 	}
@@ -438,6 +448,9 @@ void set_mode(DCmode mode) {
 		return;
 	dcmode = mode;
 	device_usb_tx_req.sep.state = true;
+
+	if (brtest_running())
+		brtest_interrupt();
 
 	switch (mode) {
 	case mInitializing:
@@ -528,6 +541,8 @@ void dcc_on_timeout(void) {
 
 void brtest_finished(void) {
 	device_usb_tx_req.sep.brtsState = true;
+	brtest_request = false;
+	brtest_timer = 0;
 
 	if (dcmode == mInitializing)
 		set_mode(mNormalOp);
@@ -544,4 +559,8 @@ void brtest_failed(void) {
 
 void brtest_changed(void) {
 	device_usb_tx_req.sep.brtsState = true;
+}
+
+bool _brtest_is_time(void) {
+	return brtest_timer >= BRTEST_NOTEST_MAX_TIME;
 }

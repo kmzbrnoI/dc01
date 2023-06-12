@@ -21,6 +21,8 @@ extern uint8_t failure_code;
 #define DCCON_WARNING_MS 500
 #define DCCON_TIMEOUT_MS 1000
 
+#define BRTEST_NOTEST_MAX_TIME (10) // seconds
+
 void set_mode(DCmode);
 void set_relays(bool relay1, bool relay2);
 bool is_dcc_connected(void);

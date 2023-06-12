@@ -41,7 +41,7 @@ void brtest_interrupt(void) {
 }
 
 bool brtest_ready(void) {
-	return dcc_at_least_one();
+	return (dcc_at_least_one()) && (brTestState != brtsInProgress);
 }
 
 bool brtest_running(void) {
