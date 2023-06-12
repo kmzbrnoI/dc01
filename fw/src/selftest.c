@@ -85,6 +85,10 @@ void brtest_update(void) {
 		return;
 
 	_brtest_inc_and_check_timeout();
+	if (!dcc_at_least_one()) {
+		brtest_interrupt();
+		return;
+	}
 
 	// TODO: indicate warning when step not changed for > 150 ms
 

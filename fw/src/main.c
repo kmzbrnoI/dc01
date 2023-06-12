@@ -424,9 +424,9 @@ void debounce_on_fall(PinDef pin) {
 			set_relays(true, true);
 		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
-		if (brtest_running())
-			brtest_interrupt();
-		if (is_dcc_connected()) {
+		if ((is_dcc_connected()) || (brtest_running())) {
+			if (brtest_running())
+				brtest_interrupt();
 			set_mode(mOverride);
 			set_relays(false, false);
 		}
