@@ -374,6 +374,7 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 				set_relays(state, state);
 			if ((!state) && (brtest_running())) {
 				brtest_interrupt();
+				brtest_request = false;
 				set_relays(false, false);
 			}
 		}
@@ -425,8 +426,10 @@ void debounce_on_fall(PinDef pin) {
 		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
 		if ((is_dcc_connected()) || (brtest_running())) {
-			if (brtest_running())
+			if (brtest_running()) {
 				brtest_interrupt();
+				brtest_request = false;
+			}
 			set_mode(mOverride);
 			set_relays(false, false);
 		}
@@ -449,8 +452,10 @@ void set_mode(DCmode mode) {
 	dcmode = mode;
 	device_usb_tx_req.sep.state = true;
 
-	if (brtest_running())
+	if (brtest_running()) {
 		brtest_interrupt();
+		brtest_request = false;
+	}
 
 	switch (mode) {
 	case mInitializing:
