@@ -25,6 +25,7 @@ extern uint8_t failure_code;
 
 void set_mode(DCmode);
 void set_relays(bool relay1, bool relay2);
+void appl_set_relays(bool state);
 bool is_dcc_connected(void);
 bool is_dcc_pc_alive(void);
 

@@ -370,13 +370,8 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 		if (dcmode == mNormalOp) {
 			if ((state) && (!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()))
 				brtest_request = true;
-			if (!brtest_running())
-				set_relays(state, state);
-			if ((!state) && (brtest_running())) {
-				brtest_interrupt();
-				brtest_request = false;
-				set_relays(false, false);
-			}
+			if ((!brtest_running()) || (!state))
+				appl_set_relays(state);
 		}
 	}
 }
@@ -412,7 +407,7 @@ static inline void poll_usb_tx_flags(void) {
 
 void cdc_main_died() {
 	if (dcmode == mNormalOp)
-		set_relays(false, false);
+		appl_set_relays(false);
 }
 
 /* IO ------------------------------------------------------------------------*/
@@ -422,16 +417,12 @@ void debounce_on_fall(PinDef pin) {
 		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state)) {
 			if (_brtest_is_time())
 				brtest_request = true;
-			set_relays(true, true);
+			appl_set_relays(true);
 		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
 		if ((is_dcc_connected()) || (brtest_running())) {
-			if (brtest_running()) {
-				brtest_interrupt();
-				brtest_request = false;
-			}
 			set_mode(mOverride);
-			set_relays(false, false);
+			appl_set_relays(false);
 		}
 	} else if (pindef_eq(pin, pin_btn_override)) {
 		set_mode(mOverride);
@@ -463,7 +454,7 @@ void set_mode(DCmode mode) {
 		gpio_pin_write(pin_led_yellow, true);
 		break;
 	case mNormalOp:
-		set_relays(is_dcc_pc_alive(), is_dcc_pc_alive());
+		appl_set_relays(is_dcc_pc_alive());
 		// intentionally no break here
 	case mOverride:
 		gpio_pin_write(pin_led_red, false);
@@ -482,7 +473,7 @@ void set_mode(DCmode mode) {
 	case mFailure:
 		gpio_pin_write(pin_led_red, true);
 		gpio_pin_write(pin_led_green, false);
-		set_relays(false, false);
+		appl_set_relays(false);
 		break;
 	}
 }
@@ -506,6 +497,14 @@ void set_relays(bool relay1, bool relay2) {
 	_relay2 = relay2;
 	gpio_pin_write(pin_led_go, relay1 && relay2);
 	gpio_pin_write(pin_led_stop, !(relay1 && relay2));
+}
+
+void appl_set_relays(bool state) {
+	if (brtest_running()) {
+		brtest_request = false;
+		brtest_interrupt();
+	}
+	set_relays(state, state);
 }
 
 bool is_dcc_connected(void) {
@@ -541,7 +540,7 @@ bool is_dcc_pc_alive() {
 }
 
 void dcc_on_timeout(void) {
-	set_relays(false, false);
+	appl_set_relays(false);
 }
 
 void brtest_finished(void) {
@@ -552,9 +551,9 @@ void brtest_finished(void) {
 	if (dcmode == mInitializing)
 		set_mode(mNormalOp);
 	else if (dcmode == mNormalOp)
-		set_relays(is_dcc_pc_alive(), is_dcc_pc_alive());
+		appl_set_relays(is_dcc_pc_alive());
 	else if (dcmode == mOverride)
-		set_relays(true, true); // test run only when changed to true
+		appl_set_relays(true); // test run only when changed to true
 }
 
 void brtest_failed(void) {
