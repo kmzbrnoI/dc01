@@ -14,7 +14,7 @@ typedef enum {
 	brttR1OnWait = 5,
 	brttR2OffWait = 6,
 	brttR2Onwait = 7,
-	brttFinished,
+	brttFinished = 8,
 } BRTestStep;
 
 typedef enum {
@@ -40,6 +40,7 @@ size_t brtest_start(void);
 void brtest_update(void); // call each 100ms
 void brtest_interrupt(void);
 bool brtest_ready(void);
+bool brtest_running(void);
 
 void brtest_finished(void);
 void brtest_failed(void);

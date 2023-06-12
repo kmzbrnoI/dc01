@@ -28,8 +28,8 @@ size_t brtest_start(void) {
 	if (brTestState == brtsInProgress)
 		return 2;
 	// Do not check step, step remains after finish/interrupt/fail for diagnostics.
-	brTestStep = brttInitTurnoff;
-	brTestState = brtsInProgress;
+	_brtest_set_state(brtsInProgress);
+	_brtest_set_step(brttInitTurnoff);
 	return 0;
 }
 
@@ -42,6 +42,10 @@ void brtest_interrupt(void) {
 
 bool brtest_ready(void) {
 	return dcc_at_least_one();
+}
+
+bool brtest_running(void) {
+	return brTestState == brtsInProgress;
 }
 
 void _brtest_set_state(BRTestState new) {
@@ -81,6 +85,8 @@ void brtest_update(void) {
 		return;
 
 	_brtest_inc_and_check_timeout();
+
+	// TODO: indicate warning when step not changed for > 150 ms
 
 	switch (brTestStep) {
 	case brttInitTurnoff:

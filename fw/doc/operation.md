@@ -5,7 +5,7 @@ DC-01 Device Operation Description
 
 `0b0MMM00IC 0xEE`
 
-* `MM`: mode
+* `M`: mode
    - 0: initialization
    - 1: normal operation
    - 2: Big relay test

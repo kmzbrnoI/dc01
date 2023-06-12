@@ -46,6 +46,7 @@ volatile bool _relay1;
 volatile bool _relay2;
 uint8_t failure_code;
 volatile uint32_t dccon_timer_ms;
+bool brtest_request; // brtest_ready & brtest_request → start brtest
 
 typedef union {
 	size_t all;
@@ -67,7 +68,7 @@ static bool debug_uart_init(void);
 static inline void poll_usb_tx_flags(void);
 static bool iwdg_init(void);
 static void state_leds_update(void);
-static void dccOnTimeout(void);
+static void dcc_on_timeout(void);
 
 /* Code ----------------------------------------------------------------------*/
 
@@ -87,6 +88,10 @@ int main(void) {
 			brtest_update();
 			interrupt_req.sep.brtest_update = false;
 		}
+		if ((brtest_request) && (brtest_ready())) {
+			if (brtest_start() == 0)
+				brtest_request = false;
+		}
 		poll_usb_tx_flags();
 	}
 }
@@ -103,6 +108,7 @@ void init(void) {
 
 	interrupt_req.all = 0;
 	device_usb_tx_req.all = 0;
+	brtest_request = false;
 
 	dcmode = mInitializing;
 	set_relays(false, false);
@@ -125,8 +131,8 @@ void init(void) {
 		HAL_Delay(1); // this time does not corespond with main loop's debounce_update period!
 	}
 
-	// State of DCC inputs should be parsed now
-	set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
+	if (dcmode == mInitializing) // if debounce_update did not change mode to mOverride
+		set_mode(mNormalOp);
 
 	gpio_pin_write(pin_led_red, false);
 	gpio_pin_write(pin_led_yellow, false);
@@ -332,7 +338,7 @@ void TIM3_IRQHandler(void) {
 			gpio_pin_write(pin_led_yellow, true);
 		}
 		if ((dcmode == mNormalOp) && (dccon_timer_ms == DCCON_TIMEOUT_MS)) {
-			dccOnTimeout();
+			dcc_on_timeout();
 			gpio_pin_write(pin_led_yellow, false);
 		}
 	}
@@ -354,10 +360,16 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 		} else {
 			dccon_timer_ms = DCCON_TIMEOUT_MS;
 		}
-		if (dcmode == mNormalOp)
-			set_relays(state, state);
-		else if (dcmode == mInitializing)
-			set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
+		if (dcmode == mNormalOp) {
+			if ((state) && (!is_dcc_connected()) && (!brtest_running()))
+				brtest_request = true;
+			if (!brtest_running())
+				set_relays(state, state);
+			if ((!state) && (brtest_running())) {
+				brtest_interrupt();
+				set_relays(false, false);
+			}
+		}
 	}
 }
 
@@ -399,8 +411,10 @@ void cdc_main_died() {
 
 void debounce_on_fall(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_go)) {
-		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state))
+		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state)) {
+			brtest_request = true;
 			set_relays(true, true);
+		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
 		if (is_dcc_connected()) {
 			set_mode(mOverride);
@@ -413,7 +427,9 @@ void debounce_on_fall(PinDef pin) {
 
 void debounce_on_raise(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_override)) {
-		set_mode(brtest_ready() ? mBigRelayTest : mNormalOp);
+		if ((!is_dcc_connected()) && (!brtest_running()))
+			brtest_request = true;
+		set_mode(mNormalOp);
 	}
 }
 
@@ -506,7 +522,7 @@ bool is_dcc_pc_alive() {
 	return dccon_timer_ms < DCCON_TIMEOUT_MS;
 }
 
-void dccOnTimeout(void) {
+void dcc_on_timeout(void) {
 	set_relays(false, false);
 }
 
@@ -515,6 +531,10 @@ void brtest_finished(void) {
 
 	if (dcmode == mInitializing)
 		set_mode(mNormalOp);
+	else if (dcmode == mNormalOp)
+		set_relays(is_dcc_pc_alive(), is_dcc_pc_alive());
+	else if (dcmode == mOverride)
+		set_relays(true, true); // test run only when changed to true
 }
 
 void brtest_failed(void) {
