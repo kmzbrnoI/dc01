@@ -111,6 +111,7 @@ void init(void) {
 	device_usb_tx_req.all = 0;
 	brtest_request = false;
 	brtest_timer = BRTEST_NOTEST_MAX_TIME;
+	dccon_timer_ms = DCCON_TIMEOUT_MS;
 
 	dcmode = mInitializing;
 	set_relays(false, false);
