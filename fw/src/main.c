@@ -266,6 +266,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 void error_handler(void) {
 	__disable_irq();
+	gpio_pin_write(pin_out_on, false);
+	gpio_pin_write(pin_out_alert, false);
+	gpio_pin_write(pin_led_red, true);
 	while (true);
 }
 
@@ -285,23 +288,23 @@ void assert_failed(uint8_t *file, uint32_t line) {
 
 // This function handles Non maskable interrupt.
 void NMI_Handler(void) {
-	while (true);
+	error_handler();
 }
 
 void HardFault_Handler(void) {
-	while (true);
+	error_handler();
 }
 
 void MemManage_Handler(void) {
-	while (true);
+	error_handler();
 }
 
 void BusFault_Handler(void) {
-	while (true);
+	error_handler();
 }
 
 void UsageFault_Handler(void) {
-	while (true);
+	error_handler();
 }
 
 void SVC_Handler(void) {}
