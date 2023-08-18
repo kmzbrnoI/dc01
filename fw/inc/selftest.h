@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#define TEST_WARNING_TIMEOUT 2 // 100 ms
 #define TEST_STEP_TIMEOUT 10 // 1000 ms single step timeout
 
 typedef enum {

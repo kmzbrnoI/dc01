@@ -74,9 +74,10 @@ void _brtest_set_step(BRTestStep new) {
 
 void _brtest_inc_and_check_timeout(void) {
 	timeout_counter++;
-	if (timeout_counter >= TEST_STEP_TIMEOUT) {
+	if (timeout_counter >= TEST_WARNING_TIMEOUT)
+		warnings.sep.brtest_time = true;
+	if (timeout_counter >= TEST_STEP_TIMEOUT)
 		_brtest_set_state(brtsFail);
-	}
 }
 
 void brtest_update(void) {
@@ -89,8 +90,6 @@ void brtest_update(void) {
 		brtest_interrupt();
 		return;
 	}
-
-	// TODO: indicate warning when step not changed for > 150 ms
 
 	switch (brTestStep) {
 	case brttInitTurnoff:

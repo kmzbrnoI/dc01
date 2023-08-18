@@ -14,6 +14,15 @@ typedef enum {
 extern volatile DCmode dcmode;
 extern uint8_t failure_code;
 
+typedef union {
+	size_t all;
+	struct {
+		bool brtest_time: 1;
+	} sep;
+} Warnings;
+
+extern volatile Warnings warnings;
+
 #define DCFAIL_NOFAILURE 0
 #define DCFAIL_BRT 1
 #define DCFAIL_CONT 2

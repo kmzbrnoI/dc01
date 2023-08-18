@@ -42,6 +42,7 @@ typedef union {
 volatile DeviceUsbTxReq device_usb_tx_req;
 
 volatile DCmode dcmode;
+volatile Warnings warnings;
 volatile bool _relay1;
 volatile bool _relay2;
 uint8_t failure_code;
@@ -117,6 +118,8 @@ void init(void) {
 	_relay1 = _relay2 = false;
 
 	dcmode = mInitializing;
+	warnings.all = 0;
+
 	set_relays(false, false);
 	gpio_pin_write(pin_out_on, false);
 	gpio_pin_write(pin_out_alert, false);
@@ -238,7 +241,7 @@ bool clock_init(void) {
 	return true;
 }
 
-static bool debug_uart_init(void) {
+bool debug_uart_init(void) {
 	h_uart_debug.Instance = USART2;
 	h_uart_debug.Init.BaudRate = 115200;
 	h_uart_debug.Init.WordLength = UART_WORDLENGTH_8B;
@@ -272,7 +275,7 @@ void error_handler(void) {
 	while (true);
 }
 
-static bool iwdg_init(void) {
+bool iwdg_init(void) {
 	h_iwdg.Instance = IWDG;
 	h_iwdg.Init.Prescaler = IWDG_PRESCALER_4; // Watchdog counter decrements each 100 us
 	h_iwdg.Init.Reload = 1000; // Watchdog timeout 100 ms
@@ -394,7 +397,7 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 	}
 }
 
-static inline void poll_usb_tx_flags(void) {
+void poll_usb_tx_flags(void) {
 	if (!cdc_dtr_ready)
 		device_usb_tx_req.all = 0;  // computer does not listen → ignore all flags
 	if (!cdc_main_can_send())
@@ -410,9 +413,11 @@ static inline void poll_usb_tx_flags(void) {
 	} else if (device_usb_tx_req.sep.state) {
 		cdc_tx.separate.data[0] = ((dcmode & 0x07) << 4) | (is_dcc_connected()) | ((dcc_at_least_one() & 1) << 1);
 		cdc_tx.separate.data[1] = failure_code;
+		cdc_tx.separate.data[2] = warnings.all;
 
-		if (cdc_main_send_nocopy(DC_CMD_MP_STATE, 2))
+		if (cdc_main_send_nocopy(DC_CMD_MP_STATE, 3))
 			device_usb_tx_req.sep.state = false;
+
 	} else if (device_usb_tx_req.sep.brtsState) {
 		cdc_tx.separate.data[0] = brTestState;
 		cdc_tx.separate.data[1] = brTestStep;
@@ -541,6 +546,8 @@ void state_leds_update(void) {
 		break;
 	case mNormalOp:
 		gpio_pin_toggle(pin_led_green);
+		if (warnings.all > 0)
+			gpio_pin_write(pin_led_yellow, !gpio_pin_read(pin_led_green)); // flashing
 		break;
 	case mOverride:
 		gpio_pin_toggle(pin_led_green);
