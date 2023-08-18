@@ -1,3 +1,5 @@
+/* Main header file with global defines, types and variables. */
+
 #pragma once
 
 #include <stdbool.h>

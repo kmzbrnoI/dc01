@@ -1,3 +1,12 @@
+/* Selftest header file.
+ *
+ * selftest.[ch] implements a single self-test: 'Big Relay Test'.
+ * This test is run when enabling DCC (either DCC occurs at inputs of user
+ * requests flow-enable of DC-01. This test requires DCC at any side and checks
+ * that disconnecting each relay disconnects DCC at other-side. These is no
+ * strict specification of which side is input and which side is output.
+ */
+
 #pragma once
 
 #include <stddef.h>

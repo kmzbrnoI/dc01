@@ -1,3 +1,7 @@
+/* Selftest implementation
+ * See selftest.h for more information.
+ */
+
 #include "selftest.h"
 #include "main.h"
 

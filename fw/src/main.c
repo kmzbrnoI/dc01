@@ -1,18 +1,15 @@
 /* Main implementation file.
  *
- * Packet transmission: # TODO - edit for DC-01
- * 1) MTBbus → CDC:
- *    There is no buffer in this direction, bacause we can never receive data
- *    asynchronously. We can receive data only when we send data to MTBbus module
- *    (inquiry or command from PC). We send data to MTBbus slvae module only
- *    if we have space for the response (= previous response is sent to USB).
- * 2) CDC → MTBbus:
+ * Packet transmission:
+ * 1) DC-01 → CDC:
+ *    There is a 'device_usb_tx_req' to hold requests for data transmission from
+ *    DC-01. DC-01 sends periodically its state, state of 'Big Relay Test'
+ *    when test is in progress and responds to requests from other side (PC).
+ * 2) CDC → DC-1:
  *    As data from USB can be received asynchronously, there is a 256-byte
  *    ring buffer in this direction. When message at the beginning of the buffer
- *    is ready, it is transmissed to MTBbus. Message waits nin buffer till
- *    module responds. MTB-USB tries to resend the packet up to 3 times.
- *    If device does not responds 3 times, packet is removed and error message
- *    is sent to PC. **MTB-USB module provides MTBbus retransmission.**
+ *    is ready, it's parsed. Usually, some flag in 'device_usb_tx_req' is set
+ *    to send response.
  */
 
 #include "main.h"
