@@ -48,6 +48,7 @@ uint8_t failure_code;
 volatile uint32_t dccon_timer_ms;
 bool brtest_request; // brtest_ready & brtest_request → start brtest
 volatile uint32_t brtest_timer;
+volatile uint32_t alert_timer;
 
 typedef union {
 	size_t all;
@@ -111,10 +112,14 @@ void init(void) {
 	device_usb_tx_req.all = 0;
 	brtest_request = false;
 	brtest_timer = BRTEST_NOTEST_MAX_TIME;
+	alert_timer = ALERT_TIME;
 	dccon_timer_ms = DCCON_TIMEOUT_MS;
+	_relay1 = _relay2 = false;
 
 	dcmode = mInitializing;
 	set_relays(false, false);
+	gpio_pin_write(pin_out_on, false);
+	gpio_pin_write(pin_out_alert, false);
 	failure_code = DCFAIL_NOFAILURE;
 
 	gpio_pin_write(pin_led_red, true);
@@ -312,6 +317,8 @@ void SysTick_Handler(void) {
 
 void TIM2_IRQHandler(void) {
 	// Timer 2 @ 100 us (10 kHz)
+	// This timer controls relay signal generation
+
 	if (_relay1)
 		gpio_pin_toggle(pin_relay1);
 	if (_relay2)
@@ -323,6 +330,7 @@ void TIM2_IRQHandler(void) {
 
 void TIM3_IRQHandler(void) {
 	// Timer 3 @ 1 ms (1 kHz)
+	// General-purpose timer
 
 	static volatile size_t counter_500ms = 0;
 	static volatile bool counter_1s = false;
@@ -348,6 +356,12 @@ void TIM3_IRQHandler(void) {
 			dcc_on_timeout();
 			gpio_pin_write(pin_led_yellow, false);
 		}
+	}
+
+	if (alert_timer < ALERT_TIME) {
+		alert_timer++;
+		if (alert_timer == ALERT_TIME)
+			gpio_pin_write(pin_out_alert, false);
 	}
 
 	leds_update_1ms();
@@ -505,7 +519,12 @@ void appl_set_relays(bool state) {
 		brtest_request = false;
 		brtest_interrupt();
 	}
+	if ((_relay1) && (_relay2) && (!state)) { // going off
+		gpio_pin_write(pin_out_alert, true);
+		alert_timer = 0;
+	}
 	set_relays(state, state);
+	gpio_pin_write(pin_out_on, state);
 }
 
 bool is_dcc_connected(void) {
@@ -554,7 +573,7 @@ void brtest_finished(void) {
 	else if (dcmode == mNormalOp)
 		appl_set_relays(is_dcc_pc_alive());
 	else if (dcmode == mOverride)
-		appl_set_relays(true); // test run only when changed to true
+		appl_set_relays(true); // test started only while enabling
 }
 
 void brtest_failed(void) {
