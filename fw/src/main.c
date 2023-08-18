@@ -480,16 +480,6 @@ void set_mode(DCmode mode) {
 		gpio_pin_write(pin_led_red, false);
 		gpio_pin_write(pin_led_green, true);
 		break;
-	case mBigRelayTest:
-		gpio_pin_write(pin_led_red, false);
-		gpio_pin_write(pin_led_green, false);
-		gpio_pin_write(pin_led_yellow, true);
-
-		size_t brtest_started = brtest_start();
-		if (brtest_started != 0) // TODO: check all situations in which this could happen
-			set_mode(mFailure);
-
-		break;
 	case mFailure:
 		gpio_pin_write(pin_led_red, true);
 		gpio_pin_write(pin_led_green, false);
@@ -552,9 +542,6 @@ void state_leds_update(void) {
 			gpio_pin_toggle(pin_led_yellow);
 		else
 			gpio_pin_write(pin_led_yellow, false);
-		break;
-	case mBigRelayTest:
-		gpio_pin_toggle(pin_led_yellow);
 		break;
 	case mFailure:
 		gpio_pin_toggle(pin_led_red);

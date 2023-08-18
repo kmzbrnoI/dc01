@@ -8,9 +8,8 @@
 typedef enum {
 	mInitializing = 0,
 	mNormalOp = 1,
-	mBigRelayTest = 2,
-	mOverride = 3,
-	mFailure = 4,
+	mOverride = 2,
+	mFailure = 3,
 } DCmode;
 
 extern volatile DCmode dcmode;
