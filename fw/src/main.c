@@ -460,6 +460,7 @@ void debounce_on_raise(PinDef pin) {
 void set_mode(DCmode mode) {
 	if (dcmode == mode)
 		return;
+	DCmode previous = dcmode;
 	dcmode = mode;
 	device_usb_tx_req.sep.state = true;
 
@@ -475,10 +476,18 @@ void set_mode(DCmode mode) {
 		break;
 	case mNormalOp:
 		appl_set_relays(is_dcc_pc_alive());
-		// intentionally no break here
+		gpio_pin_write(pin_led_red, false);
+		if ((previous != mNormalOp) && (previous != mOverride)) {
+			// To avoid out-of-phase flick
+			gpio_pin_write(pin_led_green, true);
+		}
+		break;
 	case mOverride:
 		gpio_pin_write(pin_led_red, false);
-		gpio_pin_write(pin_led_green, true);
+		if ((previous != mNormalOp) && (previous != mOverride)) {
+			// To avoid out-of-phase flick
+			gpio_pin_write(pin_led_green, true);
+		}
 		break;
 	case mFailure:
 		gpio_pin_write(pin_led_red, true);
