@@ -13,9 +13,9 @@ Options:
   -p <port>          hJOPserver PT server port [default: 5823]
   -c <port>          DC-01 serial port
   -l <loglevel>      Specify loglevel (python logging package) [default: info]
-  -h --help          Show this screen
   -m --mock          Mock server - keep output always on
-  --version          Show version.
+  -h --help          Show this screen
+  -v --version       Show version
 """
 
 import sys
@@ -43,6 +43,7 @@ DC01_BAUDRATE = 115200
 REFRESH_PERIOD = 0.25  # seconds
 DC01_RECEIVE_TIMEOUT = datetime.timedelta(milliseconds=200)
 DC01_RECEIVE_MAGIC = [0x37, 0xE2]
+DC01_SEND_MAGIC = [0x37, 0xE2]
 
 DC_CMD_PM_INFO_REQ = 0x10
 DC_CMD_PM_SET_STATE = 0x11
@@ -67,7 +68,7 @@ def dc01_ports() -> List[str]:
 
 
 def dc01_send(data: List[int], port: serial.Serial) -> None:
-    to_send = [0x37, 0xE2, len(data)] + data
+    to_send = DC01_SEND_MAGIC + [len(data)] + data
     logging.debug(f'< Send: {to_send}')
     port.write(to_send)
 
