@@ -5,11 +5,12 @@ DC-01 watchdog for hJOP
 
 Usage:
   watchdog.py [options]
+  watchdog.py --help
   watchdog.py --version
 
 Options:
   -s <servername>    hJOPserver address [default: localhost]
-  -p <port>          hJOPserver PT server port [default: 5896]
+  -p <port>          hJOPserver PT server port [default: 5823]
   -c <port>          DC-01 serial port
   -l <loglevel>      Specify loglevel (python logging package) [default: info]
   -h --help          Show this screen.
@@ -19,18 +20,21 @@ Options:
 import sys
 from docopt import docopt
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 import serial
 import serial.tools.list_ports
 import select
 import datetime
+import urllib.request
+import urllib.error
+import json
 
 
 APP_VERSION = '1.0'
 
 DC01_DESCRIPTION = 'DC-01'
 DC01_BAUDRATE = 115200
-REFRESH_PERIOD = 0.2  # seconds
+REFRESH_PERIOD = 0.25  # seconds
 DC01_RECEIVE_TIMEOUT = datetime.timedelta(milliseconds=200)
 DC01_RECEIVE_MAGIC = [0x37, 0xE2]
 
@@ -44,6 +48,9 @@ DC_CMD_MP_BRSTATE = 0x12
 
 DC01_MODE = ['mInitializing', 'mNormalOp', 'mOverride', 'mFailure']
 
+
+###############################################################################
+# Communication with DC-01
 
 def ports() -> List[Tuple[str, str]]:
     return [(port.device, port.product) for port in serial.tools.list_ports.comports()]
@@ -80,9 +87,40 @@ def dc01_parse(data: List[int]) -> None:
         logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, {dcc_at_least_one=}, {failure_code=}, {warnings=}')
 
 
-def hjopserver_ok() -> bool:
-    return True
+###############################################################################
+# Communication with hJOP
 
+
+def pt_get(path: str, server: str, port: int) -> Dict[str, Any]:
+    logging.debug(f'PT GET {path}')
+    logging.debug(f'{server=}, {port=}')
+    if not path.startswith('/'):
+        path = '/' + path
+
+    req = urllib.request.Request(
+        f'http://{server}:{port}{path}',
+        headers={
+            'Content-type': 'application/json',
+        },
+        method='GET',
+    )
+    with urllib.request.urlopen(req, timeout=REFRESH_PERIOD) as response:
+        data = response.read().decode('utf-8')
+    return json.loads(data)  # type: ignore
+
+
+def hjopserver_ok(server: str, port: int) -> bool:
+    try:
+        response = pt_get('/status', server, port)
+        logging.info(f'hJOP trakce status: {response["trakce"]["status"]}')
+        return response['trakce']['status'] == 'on'  # TODO change to appropriate attribute
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        logging.info(f'Unable to read hJOPserver status: {e}')
+        return False
+
+
+###############################################################################
+# main
 
 def main() -> None:
     args = docopt(__doc__, version=APP_VERSION)
@@ -114,12 +152,12 @@ def main() -> None:
     next_poll = datetime.datetime.now()
     last_receive_time = datetime.datetime.now()
     while True:
-        read, _, _ = select.select([ser], [], [], REFRESH_PERIOD)
+        read, _, _ = select.select([ser], [], [], REFRESH_PERIOD/2)
         received = ser.read(0x100)
 
         if datetime.datetime.now() > next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
-            dc01_send_relay(hjopserver_ok(), ser)
+            dc01_send_relay(hjopserver_ok(args['-s'], int(args['-p'])), ser)
 
         if received:
             if receive_buf and datetime.datetime.now()-last_receive_time > DC01_RECEIVE_TIMEOUT:
