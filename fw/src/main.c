@@ -217,7 +217,7 @@ bool clock_init(void) {
 	h_tim3.Instance = TIM3;
 	h_tim3.Init.Prescaler = 128;
 	h_tim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	h_tim3.Init.Period = 186;
+	h_tim3.Init.Period = 372;
 	h_tim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	h_tim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&h_tim3) != HAL_OK)
