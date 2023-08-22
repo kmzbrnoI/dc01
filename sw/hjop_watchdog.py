@@ -13,7 +13,8 @@ Options:
   -p <port>          hJOPserver PT server port [default: 5823]
   -c <port>          DC-01 serial port
   -l <loglevel>      Specify loglevel (python logging package) [default: info]
-  -h --help          Show this screen.
+  -h --help          Show this screen
+  -m --mock          Mock server - keep output always on
   --version          Show version.
 """
 
@@ -157,7 +158,7 @@ def main() -> None:
 
         if datetime.datetime.now() > next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
-            dc01_send_relay(hjopserver_ok(args['-s'], int(args['-p'])), ser)
+            dc01_send_relay(args['--mock'] or hjopserver_ok(args['-s'], int(args['-p'])), ser)
 
         if received:
             if receive_buf and datetime.datetime.now()-last_receive_time > DC01_RECEIVE_TIMEOUT:
