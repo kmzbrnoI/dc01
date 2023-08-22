@@ -19,16 +19,21 @@ Options:
 """
 
 import sys
+import os
 from docopt import docopt
 import logging
 from typing import List, Tuple, Dict, Any
 import serial
-import serial.tools.list_ports
-import select
 import datetime
 import urllib.request
 import urllib.error
 import json
+import time
+
+if os.name == 'nt':
+    import list_ports_windows as list_ports
+else:
+    import serial.tools.list_ports as list_ports
 
 
 APP_VERSION = '1.0'
@@ -54,7 +59,7 @@ DC01_MODE = ['mInitializing', 'mNormalOp', 'mOverride', 'mFailure']
 # Communication with DC-01
 
 def ports() -> List[Tuple[str, str]]:
-    return [(port.device, port.product) for port in serial.tools.list_ports.comports()]
+    return [(port.device, port.product) for port in list_ports.comports()]
 
 
 def dc01_ports() -> List[str]:
@@ -139,22 +144,23 @@ def main() -> None:
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    ports = dc01_ports()
-    if len(ports) < 1:
+    logging.info('Looking for DC-01...')
+    _ports = dc01_ports()
+    if len(_ports) < 1:
         sys.stderr.write('No DC-01 found!\n')
         sys.exit(1)
-    if len(ports) > 1 and args['-c'] == '':
+    if len(_ports) > 1 and args['-c'] == '':
         sys.stderr.write('Multiple DC-01s found!\n')
         sys.exit(1)
 
-    ser = serial.Serial(port=ports[0], baudrate=DC01_BAUDRATE, timeout=0)
+    logging.info(f'Found single DC-01: {_ports[0]}, connecting...')
+    ser = serial.Serial(port=_ports[0], baudrate=DC01_BAUDRATE, timeout=0)
 
     receive_buf = []
     next_poll = datetime.datetime.now()
     last_receive_time = datetime.datetime.now()
     while True:
-        read, _, _ = select.select([ser], [], [], REFRESH_PERIOD/2)
-        received = ser.read(0x100)
+        received = ser.read(0x100) # timeout=0 = opened in non-blocking mode
 
         if datetime.datetime.now() > next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
@@ -177,6 +183,8 @@ def main() -> None:
                 while len(receive_buf) >= len(DC01_RECEIVE_MAGIC) and receive_buf[0:len(DC01_RECEIVE_MAGIC)] != DC01_RECEIVE_MAGIC:
                     logging.debug(f'Popping packet: {receive_buf[0]}')
                     receive_buf.pop(0)
+
+        time.sleep(REFRESH_PERIOD/5)
 
 
 if __name__ == '__main__':
