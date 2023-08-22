@@ -66,13 +66,13 @@ def dc01_ports() -> List[str]:
     return [device for device, product in ports() if product == DC01_DESCRIPTION]
 
 
-def dc01_send(data: List[int], port) -> None:
+def dc01_send(data: List[int], port: serial.Serial) -> None:
     to_send = [0x37, 0xE2, len(data)] + data
     logging.debug(f'< Send: {to_send}')
     port.write(to_send)
 
 
-def dc01_send_relay(state, port) -> None:
+def dc01_send_relay(state: bool, port: serial.Serial) -> None:
     dc01_send([DC_CMD_PM_SET_STATE, int(state)], port)
 
 
@@ -90,7 +90,8 @@ def dc01_parse(data: List[int]) -> None:
         failure_code = useful_data[2]
         warnings = useful_data[3]
 
-        logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, {dcc_at_least_one=}, {failure_code=}, {warnings=}')
+        logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, '
+                     f'{dcc_at_least_one=}, {failure_code=}, {warnings=}')
 
 
 ###############################################################################
@@ -156,11 +157,11 @@ def main() -> None:
     logging.info(f'Found single DC-01: {_ports[0]}, connecting...')
     ser = serial.Serial(port=_ports[0], baudrate=DC01_BAUDRATE, timeout=0)
 
-    receive_buf = []
+    receive_buf: List[int] = []
     next_poll = datetime.datetime.now()
     last_receive_time = datetime.datetime.now()
     while True:
-        received = ser.read(0x100) # timeout=0 = opened in non-blocking mode
+        received = ser.read(0x100)  # timeout=0 = opened in non-blocking mode
 
         if datetime.datetime.now() > next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
@@ -172,7 +173,8 @@ def main() -> None:
                 receive_buf.clear()
             last_receive_time = datetime.datetime.now()
             receive_buf += received
-            while len(receive_buf) >= len(DC01_RECEIVE_MAGIC) and receive_buf[0:len(DC01_RECEIVE_MAGIC)] != DC01_RECEIVE_MAGIC:
+            while (len(receive_buf) >= len(DC01_RECEIVE_MAGIC) and
+                   receive_buf[0:len(DC01_RECEIVE_MAGIC)] != DC01_RECEIVE_MAGIC):
                 logging.debug(f'Popping packet: {receive_buf[0]}')
                 receive_buf.pop(0)
 
@@ -180,7 +182,8 @@ def main() -> None:
                 packet_length = receive_buf[len(DC01_RECEIVE_MAGIC)]+3
                 dc01_parse(receive_buf[0:packet_length])
                 receive_buf = receive_buf[packet_length:]
-                while len(receive_buf) >= len(DC01_RECEIVE_MAGIC) and receive_buf[0:len(DC01_RECEIVE_MAGIC)] != DC01_RECEIVE_MAGIC:
+                while (len(receive_buf) >= len(DC01_RECEIVE_MAGIC) and
+                       receive_buf[0:len(DC01_RECEIVE_MAGIC)] != DC01_RECEIVE_MAGIC):
                     logging.debug(f'Popping packet: {receive_buf[0]}')
                     receive_buf.pop(0)
 
