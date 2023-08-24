@@ -7333,7 +7333,7 @@
   (gr_text "BOOT" (at 129.794 108.966 90) (layer "F.SilkS") (tstamp 665081dc-8354-4d41-8855-bde8901aee4c)
     (effects (font (size 1.5 1.5) (thickness 0.15)))
   )
-  (gr_text "DC-01\nv1.1" (at 107.442 64.008) (layer "F.SilkS") (tstamp 78a228c9-bbf0-49cf-b917-2dec23b390df)
+  (gr_text "DC-01\nv1.2" (at 107.442 64.008) (layer "F.SilkS") (tstamp 78a228c9-bbf0-49cf-b917-2dec23b390df)
     (effects (font (size 2 2) (thickness 0.2)))
   )
   (gr_text "3V3" (at 160.02 102.87) (layer "F.SilkS") (tstamp 86143bb0-7899-4df8-b1df-baa3c0ac7889)

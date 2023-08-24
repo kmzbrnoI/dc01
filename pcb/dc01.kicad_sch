@@ -6,8 +6,8 @@
 
   (title_block
     (title "DCC cutter DC-01 - overall schematics")
-    (date "2023-04-20")
-    (rev "1.1")
+    (date "2023-08-24")
+    (rev "1.2")
     (company "Model Railroader Club Brno I – KMŽ Brno I – https://kmz-brno.cz/")
     (comment 1 "Jan Horáček")
     (comment 2 "https://github.com/kmzbrnoI/dc01")
@@ -5847,10 +5847,10 @@
       (reference "R32") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/0e6a4cb9-ae49-4f73-b98b-230e61d1c63e"
-      (reference "R33") (unit 1) (value "22k") (footprint "Resistor_SMD:R_0805_2012Metric")
+      (reference "R33") (unit 1) (value "47k") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/30a8ae79-2ebd-4a82-9c58-e40107ffe97d"
-      (reference "R34") (unit 1) (value "22k") (footprint "Resistor_SMD:R_0805_2012Metric")
+      (reference "R34") (unit 1) (value "47k") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
     (path "/857c828a-990f-45e3-8d14-cc15748fc857"
       (reference "SW1") (unit 1) (value "SW_Push") (footprint "Button_Switch_THT:SW_PUSH_6mm_H4.3mm")
