@@ -5682,10 +5682,10 @@
       (reference "D22") (unit 1) (value "1N5819") (footprint "Diode_SMD:D_SOD-123")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/0c5aebc0-e6d2-4505-8f7d-b88ca679901b"
-      (reference "F1") (unit 1) (value "1A") (footprint "Fuse:Fuse_1206_3216Metric")
+      (reference "F1") (unit 1) (value "1A") (footprint "Fuse:Fuse_1206_3216Metric_Pad1.42x1.75mm_HandSolder")
     )
     (path "/7d37d309-375e-4a1a-8b3f-c3df19c8683d/210a3bc2-41c5-408c-a52f-ff083073943f"
-      (reference "F2") (unit 1) (value "1A") (footprint "Fuse:Fuse_1206_3216Metric")
+      (reference "F2") (unit 1) (value "1A") (footprint "Fuse:Fuse_1206_3216Metric_Pad1.42x1.75mm_HandSolder")
     )
     (path "/00000000-0000-0000-0000-000060baef99"
       (reference "H1") (unit 1) (value "-") (footprint "jlcpcb_tooling_holes:jlcpcb_tooling_holes")
