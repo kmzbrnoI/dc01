@@ -120,8 +120,9 @@ def pt_get(path: str, server: str, port: int) -> Dict[str, Any]:
 def hjopserver_ok(server: str, port: int) -> bool:
     try:
         response = pt_get('/status', server, port)
-        logging.info(f'hJOP trakce status: {response["trakce"]["status"]}')
-        return response['trakce']['status'] == 'on'  # TODO change to appropriate attribute
+        emergency = response['trakce']['emergency']
+        logging.info('hJOP EMERGENCY' if emergency else 'hJOP OK')
+        return not emergency
     except (urllib.error.URLError, urllib.error.HTTPError) as e:
         logging.info(f'Unable to read hJOPserver status: {e}')
         return False
