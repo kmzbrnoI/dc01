@@ -386,8 +386,11 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 			dccon_timer_ms = DCCON_TIMEOUT_MS;
 		}
 		if (dcmode == mNormalOp) {
+			// request could be potentially waiting for a long time - up to DCC occurence on input
 			if ((state) && (!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()))
 				brtest_request = true;
+			if (!state) // cancel pending request
+				brtest_request = false;
 			if ((!brtest_running()) || (!state))
 				appl_set_relays(state);
 		}
@@ -429,7 +432,7 @@ void poll_usb_tx_flags(void) {
 
 void cdc_main_died() {
 	if (dcmode == mNormalOp)
-		appl_set_relays(false);
+		dcc_on_timeout();
 }
 
 /* IO ------------------------------------------------------------------------*/
@@ -566,6 +569,7 @@ bool is_dcc_pc_alive() {
 
 void dcc_on_timeout(void) {
 	appl_set_relays(false);
+	brtest_request = false;
 }
 
 void brtest_finished(void) {
