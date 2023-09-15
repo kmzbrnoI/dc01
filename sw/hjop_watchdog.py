@@ -94,6 +94,10 @@ def dc01_parse(data: List[int]) -> None:
         logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, '
                      f'{dcc_at_least_one=}, {failure_code=}, {warnings=}')
 
+    elif useful_data[0] == DC_CMD_MP_INFO and len(useful_data) >= 2:
+        fw_major, fw_minor = useful_data[1], useful_data[2]
+        logging.info(f'Received: DC-01 FW=v{fw_major}.{fw_minor}')
+
 
 ###############################################################################
 # Communication with hJOP
@@ -158,6 +162,8 @@ def main() -> None:
 
     logging.info(f'Found single DC-01: {_ports[0]}, connecting...')
     ser = serial.Serial(port=_ports[0], baudrate=DC01_BAUDRATE, timeout=0)
+
+    dc01_send([DC_CMD_PM_INFO_REQ], ser)  # Get DC-01 info
 
     receive_buf: List[int] = []
     next_poll = datetime.datetime.now()
