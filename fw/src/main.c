@@ -391,6 +391,8 @@ void cdc_main_received(uint8_t command_code, uint8_t *data, size_t data_size) {
 			if ((!brtest_running()) || (!state))
 				appl_set_relays(state);
 		}
+	} else if (command_code == DC_CMD_PM_INFO_REQ) {
+		device_usb_tx_req.sep.info = true;
 	}
 }
 
