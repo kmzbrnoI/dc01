@@ -77,6 +77,16 @@ def dc01_send_relay(state: bool, port: serial.Serial) -> None:
     dc01_send([DC_CMD_PM_SET_STATE, int(state)], port)
 
 
+def dc01_brtest_state(state: int) -> str:
+    match state:
+        case 0: return 'not yet run'
+        case 1: return 'in progress'
+        case 2: return 'succesfully completed'
+        case 3: return 'failed'
+        case 4: return 'interrupted due to DCC absence'
+        case _: return 'unknown'
+
+
 def dc01_parse(data: List[int]) -> None:
     logging.debug(f'> Received: {data}')
     useful_data = data[3:]
@@ -94,9 +104,13 @@ def dc01_parse(data: List[int]) -> None:
         logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, '
                      f'{dcc_at_least_one=}, {failure_code=}, {warnings=}')
 
-    elif useful_data[0] == DC_CMD_MP_INFO and len(useful_data) >= 2:
+    elif useful_data[0] == DC_CMD_MP_INFO and len(useful_data) >= 3:
         fw_major, fw_minor = useful_data[1], useful_data[2]
         logging.info(f'Received: DC-01 FW=v{fw_major}.{fw_minor}')
+
+    elif useful_data[0] == DC_CMD_MP_BRSTATE and len(useful_data) >= 4:
+        state, step, error = useful_data[1:4]
+        logging.info(f'Received: BRTest state: {dc01_brtest_state(state)}, {step=}, {error=}')
 
 
 ###############################################################################
