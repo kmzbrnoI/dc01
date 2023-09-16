@@ -16,8 +16,8 @@ const PinDef pin_led_go = {GPIOB, GPIO_PIN_11};
 const PinDef pin_btn_stop = {GPIOB, GPIO_PIN_8};
 const PinDef pin_led_stop = {GPIOB, GPIO_PIN_10};
 
-const PinDef pin_out_alert = {GPIOB, GPIO_PIN_5};
-const PinDef pin_out_on = {GPIOB, GPIO_PIN_6};
+const PinDef pin_out_alert = {GPIOB, GPIO_PIN_6};
+const PinDef pin_out_on = {GPIOB, GPIO_PIN_5};
 
 const PinDef pin_dcc1 = {GPIOB, GPIO_PIN_0};
 const PinDef pin_dcc2 = {GPIOB, GPIO_PIN_1};
