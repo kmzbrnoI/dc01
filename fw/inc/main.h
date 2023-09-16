@@ -32,7 +32,7 @@ extern volatile Warnings warnings;
 #define DCCON_TIMEOUT_MS 1000
 
 #define BRTEST_NOTEST_MAX_TIME (10) // seconds
-#define ALERT_TIME (3000) // milliseconds
+#define ALERT_TIME (1000) // milliseconds
 
 void set_mode(DCmode);
 void set_relays(bool relay1, bool relay2);
