@@ -3,14 +3,6 @@ DC-01 Firmware
 
 This repository contains firmware for main MCU STM32F103 of DC-01 module.
 
-## Module functionality
-
-TODO
-
-## LEDs behavior
-
-TODO
-
 ## Build & requirements
 
  * Development:
