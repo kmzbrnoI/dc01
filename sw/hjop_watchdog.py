@@ -161,6 +161,7 @@ def main() -> None:
         'critical': logging.CRITICAL,
     }.get(args['-l'], logging.INFO)
     logging.basicConfig(
+        stream=sys.stdout,
         level=loglevel,
         format='[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
