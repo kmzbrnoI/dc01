@@ -9,7 +9,7 @@ Usage:
   watchdog.py --version
 
 Options:
-  -s <servername>    hJOPserver address [default: localhost]
+  -s <servername>    hJOPserver address [default: 127.0.0.1]
   -p <port>          hJOPserver PT server port [default: 5823]
   -c <port>          DC-01 serial port
   -l <loglevel>      Specify loglevel (python logging package) [default: info]
@@ -43,7 +43,8 @@ APP_VERSION = '1.0'
 DC01_DESCRIPTION = 'DC-01'
 DC01_BAUDRATE = 115200
 REFRESH_PERIOD = 0.25  # seconds
-DC01_RECEIVE_TIMEOUT = datetime.timedelta(milliseconds=200)
+WHILE_PERIOD = REFRESH_PERIOD/5
+DC01_RECEIVE_TIMEOUT = datetime.timedelta(milliseconds=3*WHILE_PERIOD)
 DC01_RECEIVE_MAGIC = [0x37, 0xE2]
 DC01_SEND_MAGIC = [0x37, 0xE2]
 
@@ -162,7 +163,7 @@ def run(dc01_port: str, args) -> None:
     while True:
         received = ser.read(0x100)  # timeout=0 = opened in non-blocking mode
 
-        if datetime.datetime.now() > next_poll:
+        if datetime.datetime.now() >= next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
             if args['--mock'] or hjopserver_ok(args['-s'], int(args['-p'])):
                 dc01_send_relay(True, ser)
@@ -187,7 +188,8 @@ def run(dc01_port: str, args) -> None:
                     logging.debug(f'Popping packet: {receive_buf[0]}')
                     receive_buf.pop(0)
 
-        time.sleep(REFRESH_PERIOD/5)
+        time.sleep(WHILE_PERIOD)
+
 
 def main() -> None:
     args = docopt(__doc__, version=APP_VERSION)
@@ -207,7 +209,8 @@ def main() -> None:
     )
 
     while True:
-        logging.info('Looking for DC-01...')
+        if not args['-c']:
+            logging.info('Looking for DC-01...')
         _ports = [args['-c']] if args['-c'] else dc01_ports()
 
         if len(_ports) < 1:
@@ -225,7 +228,7 @@ def main() -> None:
                 else:
                     raise
 
-        time.sleep(3) # sleep before reconnect
+        time.sleep(3)  # sleep before reconnect
 
 
 if __name__ == '__main__':
