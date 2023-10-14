@@ -104,8 +104,13 @@ def dc01_parse(data: List[int]) -> None:
         failure_code = useful_data[2]
         warnings = useful_data[3]
 
-        logging.info(f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, '
-                     f'{dcc_at_least_one=}, {failure_code=}, {warnings=}')
+        level = logging.INFO if failure_code == 0 and warnings == 0 and mode == 1 \
+            else logging.WARNING
+        logging.log(
+            level,
+            f'Received: mode={DC01_MODE[mode]}, {dcc_connected=}, '
+            f'{dcc_at_least_one=}, {failure_code=}, {warnings=}'
+        )
 
     elif useful_data[0] == DC_CMD_MP_INFO and len(useful_data) >= 3:
         fw_major, fw_minor = useful_data[1], useful_data[2]
