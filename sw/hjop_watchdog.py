@@ -29,6 +29,7 @@ import urllib.request
 import urllib.error
 import json
 import time
+import socket
 
 if os.name == 'nt':
     import list_ports_windows as list_ports
@@ -141,7 +142,7 @@ def hjopserver_ok(server: str, port: int) -> bool:
         emergency = response['trakce']['emergency']
         logging.info('hJOP EMERGENCY' if emergency else 'hJOP OK')
         return not emergency
-    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+    except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout) as e:
         logging.info(f'Unable to read hJOPserver status: {e}')
         return False
 
