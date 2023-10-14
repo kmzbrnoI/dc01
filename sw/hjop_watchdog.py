@@ -16,6 +16,7 @@ Options:
   -m --mock          Mock server - keep output always on
   -h --help          Show this screen
   -v --version       Show version
+  -r --resume        Always try to resume operations, never die (suitable for production deployment)
 """
 
 import sys
@@ -142,7 +143,7 @@ def hjopserver_ok(server: str, port: int) -> bool:
         emergency = response['trakce']['emergency']
         logging.info('hJOP EMERGENCY' if emergency else 'hJOP OK')
         return not emergency
-    except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout) as e:
+    except (urllib.error.URLError, urllib.error.HTTPError, socket.error) as e:
         logging.info(f'Unable to read hJOPserver status: {e}')
         return False
 
@@ -150,35 +151,9 @@ def hjopserver_ok(server: str, port: int) -> bool:
 ###############################################################################
 # main
 
-def main() -> None:
-    args = docopt(__doc__, version=APP_VERSION)
-
-    loglevel = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'warning': logging.WARNING,
-        'error': logging.ERROR,
-        'critical': logging.CRITICAL,
-    }.get(args['-l'], logging.INFO)
-    logging.basicConfig(
-        stream=sys.stdout,
-        level=loglevel,
-        format='[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-    )
-
-    logging.info('Looking for DC-01...')
-    _ports = dc01_ports()
-    if len(_ports) < 1:
-        sys.stderr.write('No DC-01 found!\n')
-        sys.exit(1)
-    if len(_ports) > 1 and args['-c'] == '':
-        sys.stderr.write('Multiple DC-01s found!\n')
-        sys.exit(1)
-
-    logging.info(f'Found single DC-01: {_ports[0]}, connecting...')
-    ser = serial.Serial(port=_ports[0], baudrate=DC01_BAUDRATE, timeout=0)
-
+def run(dc01_port: str, args) -> None:
+    logging.info(f'Connecting to {dc01_port}...')
+    ser = serial.Serial(port=dc01_port, baudrate=DC01_BAUDRATE, timeout=0)
     dc01_send([DC_CMD_PM_INFO_REQ], ser)  # Get DC-01 info
 
     receive_buf: List[int] = []
@@ -189,7 +164,8 @@ def main() -> None:
 
         if datetime.datetime.now() > next_poll:
             next_poll = datetime.datetime.now() + datetime.timedelta(seconds=REFRESH_PERIOD)
-            dc01_send_relay(args['--mock'] or hjopserver_ok(args['-s'], int(args['-p'])), ser)
+            if args['--mock'] or hjopserver_ok(args['-s'], int(args['-p'])):
+                dc01_send_relay(True, ser)
 
         if received:
             if receive_buf and datetime.datetime.now()-last_receive_time > DC01_RECEIVE_TIMEOUT:
@@ -212,6 +188,44 @@ def main() -> None:
                     receive_buf.pop(0)
 
         time.sleep(REFRESH_PERIOD/5)
+
+def main() -> None:
+    args = docopt(__doc__, version=APP_VERSION)
+
+    loglevel = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL,
+    }.get(args['-l'], logging.INFO)
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=loglevel,
+        format='[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+
+    while True:
+        logging.info('Looking for DC-01...')
+        _ports = [args['-c']] if args['-c'] else dc01_ports()
+
+        if len(_ports) < 1:
+            logging.error('No DC-01 found!')
+        elif len(_ports) > 1:
+            logging.error('Multiple DC-01s found!')
+        else:
+            try:
+                run(_ports[0], args)
+            except serial.serialutil.SerialException as e:
+                logging.error(f'SerialException: {e}')
+            except Exception as e:
+                if args['-r']:
+                    logging.error(f'Exception: {e}')
+                else:
+                    raise
+
+        time.sleep(3) # sleep before reconnect
 
 
 if __name__ == '__main__':
