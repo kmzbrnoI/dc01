@@ -17,6 +17,7 @@ Options:
   -h --help          Show this screen
   -v --version       Show version
   -r --resume        Always try to resume operations, never die (suitable for production deployment)
+  -d <dir>           Set logging directory to <dir>
 """
 
 import sys
@@ -212,6 +213,15 @@ def main() -> None:
         format='[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
+
+    if args['-d']:
+        if not os.path.exists(args['-d']):
+            os.makedirs(args['-d'])
+        logFormatter = logging.Formatter('[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s')
+        filename = os.path.join(args['-d'], datetime.datetime.now().strftime('%Y-%m-%d')+'.log')
+        fileHandler = logging.FileHandler(filename)
+        fileHandler.setFormatter(logFormatter)
+        logging.getLogger().addHandler(fileHandler)
 
     while True:
         if not args['-c']:
