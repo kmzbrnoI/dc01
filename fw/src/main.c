@@ -93,6 +93,9 @@ int main(void) {
 			brtest_start();
 		}
 		poll_usb_tx_flags();
+
+		warnings.sep.timeout = ((dccon_timer_ms >= DCCON_WARNING_MS) &&
+		                        (dccon_timer_ms < DCCON_TIMEOUT_MS));
 	}
 }
 
@@ -547,7 +550,7 @@ void state_leds_update(void) {
 		break;
 	case mNormalOp:
 		gpio_pin_toggle(pin_led_green);
-		if (warnings.all > 0)
+		if ((warnings.all > 0) && (!warnings.sep.timeout))
 			gpio_pin_write(pin_led_yellow, !gpio_pin_read(pin_led_green)); // flashing
 		break;
 	case mOverride:

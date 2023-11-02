@@ -19,6 +19,7 @@ typedef union {
 	size_t all;
 	struct {
 		bool brtest_time: 1;
+		bool timeout :1;
 	} sep;
 } Warnings;
 
