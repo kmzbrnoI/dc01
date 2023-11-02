@@ -29,7 +29,7 @@ extern volatile Warnings warnings;
 #define DCFAIL_CONT 2
 
 #define DCCON_WARNING_MS 500
-#define DCCON_TIMEOUT_MS 1000
+#define DCCON_TIMEOUT_MS 2000
 
 #define BRTEST_NOTEST_MAX_TIME (10) // seconds
 #define ALERT_TIME (1000) // milliseconds
