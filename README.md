@@ -42,6 +42,12 @@ See [README in `fw` subfolder](fw/README.md).
 DC-01 & hJOP, it monitors hJOP. When hJOP dies or requests DCC disconnect
 DCC is disconnected via DC-01.
 
+## External acoustic warning
+
+* Box Z23 (gme.cz)
+* 5.5/2.1mm connector for power supply (12V)
+* 5.5/2.5mm connector for DC-01 connection
+
 ## Authors
 
 DC-01 is designed by members of [Model Railroaders Club
