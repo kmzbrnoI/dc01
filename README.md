@@ -48,9 +48,14 @@ DCC is disconnected via DC-01.
 * 5.5/2.1mm connector for power supply (12V)
 * 5.5/2.5mm connector for DC-01 connection
 
+## Further reading
+
+Functionality of DC-01 is described in [this article](https://www.kmz-brno.cz/dc01/)
+(czech language only).
+
 ## Authors
 
-DC-01 is designed by members of [Model Railroaders Club
+DC-01 was created by a member of [Model Railroaders Club
 Brno](https://www.kmz-brno.cz/), [Jan Horáček](mailto:jan.horacek@kmz-brno.cz).
 
 ## Licence
