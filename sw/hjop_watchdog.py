@@ -20,7 +20,6 @@ Options:
   -d <dir>           Set logging directory to <dir>
 """
 
-import sys
 import os
 from docopt import docopt
 import logging
@@ -48,6 +47,7 @@ WHILE_PERIOD = REFRESH_PERIOD/5
 DC01_RECEIVE_TIMEOUT = datetime.timedelta(milliseconds=3*WHILE_PERIOD)
 DC01_RECEIVE_MAGIC = [0x37, 0xE2]
 DC01_SEND_MAGIC = [0x37, 0xE2]
+DC01_OK_VERSIONS = ['1.0']
 
 DC_CMD_PM_INFO_REQ = 0x10
 DC_CMD_PM_SET_STATE = 0x11
@@ -58,6 +58,27 @@ DC_CMD_MP_STATE = 0x11
 DC_CMD_MP_BRSTATE = 0x12
 
 DC01_MODE = ['mInitializing', 'mNormalOp', 'mOverride', 'mFailure']
+
+
+###############################################################################
+# Common
+
+class ColorFormatter(logging.Formatter):
+    GREY = '\x1b[38;20m'
+    YELLOW = '\x1b[1;33;20m'
+    RED = '\x1b[1;31;20m'
+    RESET = '\x1b[0m'
+
+    LEVEL_COLORS = {
+        logging.WARNING: YELLOW,
+        logging.ERROR: RED,
+        logging.CRITICAL: RED,
+    }
+
+    def format(self, record):
+        log_fmt = self.LEVEL_COLORS.get(record.levelno, self.GREY) + self._fmt + self.RESET
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
 
 ###############################################################################
@@ -115,7 +136,10 @@ def dc01_parse(data: List[int]) -> None:
 
     elif useful_data[0] == DC_CMD_MP_INFO and len(useful_data) >= 3:
         fw_major, fw_minor = useful_data[1], useful_data[2]
-        logging.info(f'Received: DC-01 FW=v{fw_major}.{fw_minor}')
+        fw_version_str = f'{fw_major}.{fw_minor}'
+        logging.info(f'Received: DC-01 FW=v{fw_version_str}')
+        if fw_version_str not in DC01_OK_VERSIONS:
+            logging.warning('DC-01 FW version is not supported (outdated version?)!')
 
     elif useful_data[0] == DC_CMD_MP_BRSTATE and len(useful_data) >= 4:
         state, step, error = useful_data[1:4]
@@ -200,6 +224,7 @@ def run(dc01_port: str, args) -> None:
 def main() -> None:
     args = docopt(__doc__, version=APP_VERSION)
 
+    logformat = '[%(asctime)s] %(levelname)s %(message)s'
     loglevel = {
         'debug': logging.DEBUG,
         'info': logging.INFO,
@@ -207,20 +232,20 @@ def main() -> None:
         'error': logging.ERROR,
         'critical': logging.CRITICAL,
     }.get(args['-l'], logging.INFO)
-    logging.basicConfig(
-        stream=sys.stdout,
-        level=loglevel,
-        format='[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-    )
+    logging.getLogger().setLevel(loglevel)
+
+    # Replace default logging terminal handler with ColorFormatter handler
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(ColorFormatter(logformat))
+    logging.getLogger().addHandler(streamHandler)
 
     if args['-d']:
+        # Add file handler
         if not os.path.exists(args['-d']):
             os.makedirs(args['-d'])
-        logFormatter = logging.Formatter('[%(asctime)s.%(msecs)03d] %(levelname)s %(message)s')
         filename = os.path.join(args['-d'], datetime.datetime.now().strftime('%Y-%m-%d')+'.log')
         fileHandler = logging.FileHandler(filename)
-        fileHandler.setFormatter(logFormatter)
+        fileHandler.setFormatter(logging.Formatter(logformat))
         logging.getLogger().addHandler(fileHandler)
 
     while True:
