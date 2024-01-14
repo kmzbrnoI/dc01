@@ -44,9 +44,7 @@ DCC is disconnected via DC-01.
 
 ## External acoustic warning
 
-* Box Z23 (gme.cz)
-* 5.5/2.1mm connector for power supply (12V)
-* 5.5/2.5mm connector for DC-01 connection
+See [README in `aco-warn` subfolder](aco-warn/README.md).
 
 ## Further reading
 
