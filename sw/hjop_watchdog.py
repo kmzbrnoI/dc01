@@ -83,6 +83,19 @@ class ColorFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+def supports_color() -> bool:
+    """
+    Returns True if the running system's terminal supports color, and False
+    otherwise.
+    """
+    plat = sys.platform
+    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
+                                                  'ANSICON' in os.environ)
+    # isatty is not always implemented, #6223.
+    is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+    return supported_platform and is_a_tty
+
+
 ###############################################################################
 # Communication with DC-01
 
@@ -238,7 +251,8 @@ def main() -> None:
 
     # Replace default logging terminal handler with ColorFormatter handler
     streamHandler = logging.StreamHandler(stream=sys.stdout)
-    formatter = logging.Formatter if args['--nocolor'] else ColorFormatter
+    color = not args['--nocolor'] and supports_color()
+    formatter = ColorFormatter if color else logging.Formatter
     streamHandler.setFormatter(formatter(logformat))
     logging.getLogger().addHandler(streamHandler)
 
