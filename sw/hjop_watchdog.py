@@ -17,6 +17,7 @@ Options:
   -h --help          Show this screen
   -v --version       Show version
   -r --resume        Always try to resume operations, never die (suitable for production deployment)
+  --nocolor          Do not print colors to terminal
   -d <dir>           Set logging directory to <dir>
 """
 
@@ -236,7 +237,8 @@ def main() -> None:
 
     # Replace default logging terminal handler with ColorFormatter handler
     streamHandler = logging.StreamHandler()
-    streamHandler.setFormatter(ColorFormatter(logformat))
+    formatter = logging.Formatter if args['--nocolor'] else ColorFormatter
+    streamHandler.setFormatter(formatter(logformat))
     logging.getLogger().addHandler(streamHandler)
 
     if args['-d']:
