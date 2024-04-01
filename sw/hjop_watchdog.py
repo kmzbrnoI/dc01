@@ -22,6 +22,7 @@ Options:
 """
 
 import os
+import sys
 from docopt import docopt
 import logging
 from typing import List, Tuple, Dict, Any
@@ -236,7 +237,7 @@ def main() -> None:
     logging.getLogger().setLevel(loglevel)
 
     # Replace default logging terminal handler with ColorFormatter handler
-    streamHandler = logging.StreamHandler()
+    streamHandler = logging.StreamHandler(stream=sys.stdout)
     formatter = logging.Formatter if args['--nocolor'] else ColorFormatter
     streamHandler.setFormatter(formatter(logformat))
     logging.getLogger().addHandler(streamHandler)
