@@ -36,6 +36,7 @@ import socket
 
 if os.name == 'nt':
     import list_ports_windows as list_ports
+    import colorama
 else:
     import serial.tools.list_ports as list_ports
 
@@ -88,9 +89,7 @@ def supports_color() -> bool:
     Returns True if the running system's terminal supports color, and False
     otherwise.
     """
-    plat = sys.platform
-    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
-                                                  'ANSICON' in os.environ)
+    supported_platform = sys.platform != 'Pocket PC'
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
     return supported_platform and is_a_tty
@@ -249,9 +248,13 @@ def main() -> None:
     }.get(args['-l'], logging.INFO)
     logging.getLogger().setLevel(loglevel)
 
+    if os.name == 'nt':
+        colorama.just_fix_windows_console()
+
     # Replace default logging terminal handler with ColorFormatter handler
     streamHandler = logging.StreamHandler(stream=sys.stdout)
     color = not args['--nocolor'] and supports_color()
+    print(color)
     formatter = ColorFormatter if color else logging.Formatter
     streamHandler.setFormatter(formatter(logformat))
     logging.getLogger().addHandler(streamHandler)
