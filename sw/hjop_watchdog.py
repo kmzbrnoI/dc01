@@ -254,7 +254,6 @@ def main() -> None:
     # Replace default logging terminal handler with ColorFormatter handler
     streamHandler = logging.StreamHandler(stream=sys.stdout)
     color = not args['--nocolor'] and supports_color()
-    print(color)
     formatter = ColorFormatter if color else logging.Formatter
     streamHandler.setFormatter(formatter(logformat))
     logging.getLogger().addHandler(streamHandler)
