@@ -443,9 +443,13 @@ void cdc_main_died() {
 void debounce_on_fall(PinDef pin) {
 	if (pindef_eq(pin, pin_btn_go)) {
 		if ((dcmode == mOverride) && (!debounced[DEB_BTN_OVERRIDE].state)) {
-			if (_brtest_is_time())
+			if ((!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()))
 				brtest_request = true;
 			appl_set_relays(true);
+		} else if ((dcmode == mOverride) && (debounced[DEB_BTN_OVERRIDE].state) && (is_dcc_pc_alive())) {
+			if ((!is_dcc_connected()) && (!brtest_running()) && (_brtest_is_time()))
+				brtest_request = true;
+			set_mode(mNormalOp);
 		}
 	} else if (pindef_eq(pin, pin_btn_stop)) {
 		if ((is_dcc_connected()) || (brtest_running())) {
